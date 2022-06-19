@@ -1,0 +1,5 @@
+.DS_Store
+chainlink/adapters/twitter/.deta/prog_info
+chainlink/adapters/twitter/.deta/state
+chainlink/adapters/twitter/__pycache__/app.cpython-38.pyc
+chainlink/adapters/twitter/__pycache__/main.cpython-38.pyc
