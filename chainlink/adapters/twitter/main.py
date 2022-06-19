@@ -1,3 +1,4 @@
+from ctypes import Union
 from fastapi import FastAPI, Security, HTTPException, Depends
 from fastapi.security.api_key import APIKeyQuery, APIKeyHeader, APIKey
 from starlette.status import HTTP_403_FORBIDDEN
@@ -20,6 +21,15 @@ api_key_header = APIKeyHeader(name=API_KEY_NAME, auto_error=False)
 
 app = FastAPI(docs_url='/')
 
+
+from pydantic import BaseModel
+
+class Request(BaseModel):
+    id: str
+    data: dict
+    meta: dict = None
+    responseURL: str = None
+
 async def get_api_key(
     api_key_query: str = Security(api_key_query),
     api_key_header: str = Security(api_key_header),
@@ -36,22 +46,28 @@ async def get_api_key(
         )
         
 
-@app.get("/latest_tweet_ts/")
-def latest_tweet_ts(username: str, api_key: APIKey = Depends(get_api_key)):
+@app.post("/latest_tweet_ts/")
+def latest_tweet_ts(request: Request):
+    username = request.data["username"]
     user = client.get_user(username=username).data
     data = client.get_users_tweets(user.id, tweet_fields=["created_at"]).data
     tweet = data[0]
     ts = int(tweet.created_at.timestamp())
-    return ts
+    resp = {
+        'jobRunID': request.id,
+        'data': ts,
+        'statusCode': 200,
+        }
+    return resp
 
 
-@app.get("/since_last_tweet/likes")
-def likes_since_last_tweet(username: str, ts: int, api_key: APIKey = Depends(get_api_key)):
-    user = client.get_user(username=username).data
-    data = client.get_users_tweets(
-        user.id,
-        tweet_fields=["created_at", "public_metrics"],
-        start_time=dt.fromtimestamp(ts, tz=tz.utc).isoformat()
-        ).data
-    cum_like_count = sum(tweet.public_metrics["like_count"] for tweet in data)
-    return cum_like_count
+# @app.get("/since_last_tweet/likes")
+# def likes_since_last_tweet(username: str, ts: int):
+#     user = client.get_user(username=username).data
+#     data = client.get_users_tweets(
+#         user.id,
+#         tweet_fields=["created_at", "public_metrics"],
+#         start_time=dt.fromtimestamp(ts, tz=tz.utc).isoformat()
+#         ).data
+#     cum_like_count = sum(tweet.public_metrics["like_count"] for tweet in data)
+#     return cum_like_count

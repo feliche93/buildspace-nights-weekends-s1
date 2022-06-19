@@ -1,0 +1,8 @@
+type = "webhook"
+schemaVersion = 1
+name = "twitter-latest-tweet-ts"
+observationSource = """
+fetch        [type=bridge name="twitter-adapter" requestData="{\\"id\\": \\"0\\", \\"data\\": { \\"username\\": \\"0xhagenho\\"}}"]
+
+    fetch
+"""
