@@ -46,6 +46,7 @@ async def get_api_key(
         raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail="Could not validate credentials")
 
 
+# TODO: How would this work wihtout specifying a username?
 @app.post("/latest_tweet_ts/")
 def latest_tweet_ts(request: Request) -> dict:
     """Returns the timestamp of the latest tweet for the given user.
