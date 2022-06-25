@@ -4,6 +4,7 @@
 // When running the script with `npx hardhat run <script>` you'll find the Hardhat
 // Runtime Environment's members available in the global scope.
 const hre = require("hardhat");
+const node_addr = "0x6dd9862Add1FCd6d0547deE37C7eC178322517f4"
 
 async function main() {
   // Hardhat always runs the compile task when running scripts with its command
@@ -24,7 +25,7 @@ async function main() {
   const Oracle = await hre.ethers.getContractFactory("Oracle");
   const oracle = await Oracle.deploy(linkToken.address);
   await oracle.deployed();
-  await oracle.functions.setFulfillmentPermission("0x6dd9862Add1FCd6d0547deE37C7eC178322517f4", true)
+  await oracle.functions.setFulfillmentPermission(node_addr, true)
 
   console.log("Link Token deployed to:", linkToken.address);
   console.log("Oracle deployed to:", oracle.address);
