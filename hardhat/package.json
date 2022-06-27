@@ -18,6 +18,7 @@
   "dependencies": {
     "@chainlink/contracts": "^0.4.1",
     "@openzeppelin/contracts": "^4.6.0",
+    "fs": "^0.0.1-security",
     "link_token": "^1.0.6"
   }
 }
