@@ -3,7 +3,7 @@ schemaVersion = 1
 name = "twitter-user-latest-tweet-ts"
 externalJobID = "2cc92622-6a6a-4975-ae49-9c873525e881"
 maxTaskDuration = "0s"
-contractAddress = "0xF9912D41dD97b5C75Acb1fc48C9dE1e3D120fb6e"
+contractAddress = "0x871030BDbA0Fea8BFB342f91453C068a6EDc47a2"
 minIncomingConfirmations = 0
 minContractPaymentLinkJuels = "0"
 observationSource = """
@@ -20,7 +20,7 @@ observationSource = """
                   abi="fulfillOracleRequest(bytes32 requestId, uint256 payment, address callbackAddress, bytes4 callbackFunctionId, uint256 expiration, bytes32 data)"
                   data="{\\"requestId\\": $(decode_log.requestId), \\"payment\\": $(decode_log.payment), \\"callbackAddress\\": $(decode_log.callbackAddr), \\"callbackFunctionId\\": $(decode_log.callbackFunctionId), \\"expiration\\": $(decode_log.cancelExpiration), \\"data\\": $(encode_data)}"
                  ]
-    submit_tx    [type=ethtx to="0xF9912D41dD97b5C75Acb1fc48C9dE1e3D120fb6e" data="$(encode_tx)"]
+    submit_tx    [type=ethtx to="0x871030BDbA0Fea8BFB342f91453C068a6EDc47a2" data="$(encode_tx)"]
 
     decode_log -> decode_cbor -> fetch -> parse -> encode_data -> encode_tx -> submit_tx
 """
