@@ -4,7 +4,7 @@
 // When running the script with `npx hardhat run <script>` you'll find the Hardhat
 // Runtime Environment's members available in the global scope.
 const hre = require("hardhat");
-const node_addr = "0x9d6862ab0eA7A6A8D5637Bd9876Da2410F65ac46"
+const nodeAddress = "0x56DDe95fFEFB87631Cf0a74B7b34D1fef8432dCA";
 
 async function main() {
   // Hardhat always runs the compile task when running scripts with its command
@@ -24,7 +24,6 @@ async function main() {
 
   // Addresss in Chainlink Node Operator GUI
   // TODO: Change address if docker redeploys
-  const nodeAddress = "0x00680333598676D85622275b03f69666B4986fcC";
 
   const Oracle = await hre.ethers.getContractFactory("Oracle");
   const oracle = await Oracle.deploy(linkToken.address);

@@ -4,10 +4,10 @@ const fs = require("fs");
 const { sign } = require("crypto");
 // TESTNET SPECIFIC
 // RUN ORACLE AND LINK DEPLOYMENT AN PASTE ADRESSES HERE
-const linktok_addr = "0x12DC673B7926fBE1ED91FBE4688aAa9E13007C68"
-const oracle_addr = "0x871030BDbA0Fea8BFB342f91453C068a6EDc47a2"
+const linktok_addr = "0x5d582672519AAf9f67166226A2a846D50Dfe2234"
+const oracle_addr = "0x04983fFa48bc3f6213De80DDa18515F8C7a74a8e"
 ////////////
-const node_addr = "0x9d6862ab0eA7A6A8D5637Bd9876Da2410F65ac46"
+const node_addr = "0x56DDe95fFEFB87631Cf0a74B7b34D1fef8432dCA"
 var linkTokenAbiBlob = fs.readFileSync('artifacts/link_token/contracts/LinkToken.sol/LinkToken.json')
 var OracleAbiBlob = fs.readFileSync('artifacts/@chainlink/contracts/src/v0.6/Oracle.sol/Oracle.json')
 const oracleAbi = JSON.parse(OracleAbiBlob).abi
@@ -16,14 +16,10 @@ const linkTokenAbi = JSON.parse(linkTokenAbiBlob).abi
 describe("Greeter", function () {
   it("Should return the new greeting once it's changed", async function () {
     let signers = await ethers.getSigners()
-    await signers[0].sendTransaction({
+    await signers[1].sendTransaction({
       to: node_addr,
       value: ethers.utils.parseEther("1.0")
     });
-    // await signers[0].sendTransaction({
-    //   to: oracle_addr,
-    //   value: ethers.utils.parseEther("1.0")
-    // });
 
     const TwitterAdapter = await ethers.getContractFactory("ChainlinkTwitter");
     TwitterAdapter
@@ -35,14 +31,23 @@ describe("Greeter", function () {
     let nodeStatus = await oracle.functions.getAuthorizationStatus(node_addr)
     console.log(nodeStatus)
     let linkToken = new ethers.Contract(linktok_addr, linkTokenAbi, signers[0])
-    // let linkTokenCon = linkToken.connect(signer)
-    await linkToken.functions.transfer(node_addr, 2)
-    await linkToken.functions.transfer(twitterAdapter.address, 2)
+    await linkToken.functions.transfer(oracle_addr, 200)
+    await linkToken.functions.transfer(node_addr, 200)
+    await linkToken.functions.transfer(twitterAdapter.address, 200)
     let balanceOwner = await linkToken.functions.balanceOf(signers[0].address)
     console.log(balanceOwner)
 
-    let balanceAdapter = await linkToken.functions.balanceOf(twitterAdapter.address)
+    while (await linkToken.functions.balanceOf(twitterAdapter.address) == 0);
+    balanceAdapter = await linkToken.functions.balanceOf(twitterAdapter.address)
     console.log(balanceAdapter)
+
+    while (await linkToken.functions.balanceOf(oracle_addr) == 0);
+    balanceOracle = await linkToken.functions.balanceOf(oracle_addr)
+    console.log(balanceOracle)
+
+    while (await linkToken.functions.balanceOf(node_addr) == 0);
+    balanceNode = await linkToken.functions.balanceOf(node_addr)
+    console.log(balanceNode)
 
     await twitterAdapter.functions.requestLastUserTweetTs("0xhagenho")
     while (!await twitterAdapter.fullfilled());

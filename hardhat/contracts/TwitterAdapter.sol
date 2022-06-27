@@ -34,14 +34,13 @@ contract ChainlinkTwitter is ChainlinkClient {
         console.log("TA: Received %s", username);
         Chainlink.Request memory req = buildChainlinkRequest(jobId, address(this), this.fulfill.selector);
         req.add("username", username);
-        sendChainlinkRequestTo(oracle, req, 1 * 10 * 17);
+        sendChainlinkRequestTo(oracle, req, 0);
     }
         
     //callback function
     function fulfill(bytes32 _requestId, uint256 _timeStamp) public recordChainlinkFulfillment(_requestId) {
         fullfilled = true;
         timeStamp = _timeStamp;
+        console.log("Last timestamp of Tweet", timeStamp);
     }
-
-    console.log("Last timestamp of Tweet", timeStamp);
 }
