@@ -1,4 +1,5 @@
 require("@nomiclabs/hardhat-waffle");
+require("@appliedblockchain/chainlink-plugins-fund-link");
 
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
@@ -10,6 +11,8 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
   }
 });
 
+
+
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
 
@@ -20,14 +23,25 @@ module.exports = {
   solidity: {
     compilers: [
       {
-        version: "0.8.4"
+        version: "0.8.7"
       },
       {
         version: "0.4.11"
       },
       {
         version: "0.4.21"
+      },
+      {
+        version: "0.6.6"
       }
     ]
+  },
+  networks: {
+    hardhat: {
+      forking: {
+        url: "https://polygon-mainnet.g.alchemy.com/v2/yAiPL8ralrroA3hD7WOqsZWqxq2J9Zv0",
+        blockNumber: 30018042
+      }
+    }
   }
 }

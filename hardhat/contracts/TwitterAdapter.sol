@@ -25,7 +25,7 @@ contract ChainlinkTwitter is ChainlinkClient {
     constructor(address _linkTokenAddr, address _oralcleAddr) {
     	setChainlinkToken(_linkTokenAddr);
     	oracle = _oralcleAddr; // oracle address
-    	jobId = '2cc926226a6a4975ae499c873525e881'; //job id 
+    	jobId = '2cc926226a6a4975ae499c873525e881'; //job id
     	owner = msg.sender;
     }
 
@@ -43,4 +43,5 @@ contract ChainlinkTwitter is ChainlinkClient {
         timeStamp = _timeStamp;
     }
 
+    console.log("Last timestamp of Tweet", timeStamp);
 }

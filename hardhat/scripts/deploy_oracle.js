@@ -21,10 +21,14 @@ async function main() {
   const linkToken = await LinkToken.deploy();
   await linkToken.deployed();
 
+  // Addresss in Chainlink Node Operator GUI
+  // TODO: Change address if docker redeploys
+  const nodeAddress = "0x00680333598676D85622275b03f69666B4986fcC";
+
   const Oracle = await hre.ethers.getContractFactory("Oracle");
   const oracle = await Oracle.deploy(linkToken.address);
   await oracle.deployed();
-  await oracle.functions.setFulfillmentPermission("0x6dd9862Add1FCd6d0547deE37C7eC178322517f4", true)
+  await oracle.functions.setFulfillmentPermission(nodeAddress, true)
 
   console.log("Link Token deployed to:", linkToken.address);
   console.log("Oracle deployed to:", oracle.address);
