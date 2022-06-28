@@ -3,7 +3,7 @@ schemaVersion = 1
 name = "twitter-user-latest-tweet-ts"
 externalJobID = "2cc92622-6a6a-4975-ae49-9c873525e881"
 maxTaskDuration = "0s"
-contractAddress = "0x04983fFa48bc3f6213De80DDa18515F8C7a74a8e"
+contractAddress = "0xA65952CE9D220B0106f7902aB04E08a124F684Dd"
 minIncomingConfirmations = 0
 minContractPaymentLinkJuels = "0"
 observationSource = """
@@ -13,14 +13,20 @@ observationSource = """
                   topics="$(jobRun.logTopics)"]
 
     decode_cbor  [type=cborparse data="$(decode_log.data)"]
-    fetch        [type=bridge name="twitter-adapter" requestData="{\\"id\\": $(jobSpec.externalJobID), \\"data\\": { \\"username\\": $(decode_cbor.username)}}"]
-    parse        [type=jsonparse path="data" data="$(fetch)"]
-    encode_data  [type=ethabiencode abi="(uint256 value)" data="{ \\"value\\": $(parse) }"]
+    fetch        [type=bridge name="twitter-adapter" requestData="{\\"id\\": $(jobSpec.externalJobID), \\"data\\": {\\"username\\": $(decode_cbor.username), \\"userid\\": $(decode_cbor.userid), \\"method\\": $(decode_cbor.method), \\"unix_ts\\": $(decode_cbor.unix_ts)}}"]
+    decode_log -> decode_cbor -> fetch
+    fetch -> payload
+    fetch -> userid
+    payload      [type=jsonparse path="data,payload" data="$(fetch)"]
+    userid      [type=jsonparse path="data,userid" data="$(fetch)"]
+    payload -> encode_data
+    userid -> encode_data
+    encode_data  [type=ethabiencode abi="(bytes32 _requestId, uint256 _payload, uint256 _userId)" data="{\\"_requestId\\": $(decode_log.requestId), \\"_payload\\": $(payload), \\"_userId\\": $(userid) }"]
     encode_tx    [type=ethabiencode
-                  abi="fulfillOracleRequest(bytes32 requestId, uint256 payment, address callbackAddress, bytes4 callbackFunctionId, uint256 expiration, bytes32 data)"
+                  abi="fulfillOracleRequest2(bytes32 requestId, uint256 payment, address callbackAddress, bytes4 callbackFunctionId, uint256 expiration, bytes calldata data)"
                   data="{\\"requestId\\": $(decode_log.requestId), \\"payment\\": $(decode_log.payment), \\"callbackAddress\\": $(decode_log.callbackAddr), \\"callbackFunctionId\\": $(decode_log.callbackFunctionId), \\"expiration\\": $(decode_log.cancelExpiration), \\"data\\": $(encode_data)}"
                  ]
-    submit_tx    [type=ethtx to="0x04983fFa48bc3f6213De80DDa18515F8C7a74a8e" data="$(encode_tx)"]
+    submit_tx    [type=ethtx to="0xA65952CE9D220B0106f7902aB04E08a124F684Dd" data="$(encode_tx)"]
 
-    decode_log -> decode_cbor -> fetch -> parse -> encode_data -> encode_tx -> submit_tx
+    encode_data -> encode_tx -> submit_tx
 """

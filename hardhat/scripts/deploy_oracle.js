@@ -4,6 +4,7 @@
 // When running the script with `npx hardhat run <script>` you'll find the Hardhat
 // Runtime Environment's members available in the global scope.
 const hre = require("hardhat");
+const ethers = hre.ethers
 const nodeAddress = "0x56DDe95fFEFB87631Cf0a74B7b34D1fef8432dCA";
 
 async function main() {
@@ -25,12 +26,17 @@ async function main() {
   // Addresss in Chainlink Node Operator GUI
   // TODO: Change address if docker redeploys
 
-  const Oracle = await hre.ethers.getContractFactory("Oracle");
-  const oracle = await Oracle.deploy(linkToken.address);
+  Oracle = await hre.ethers.getContractFactory("Operator");
+  let signers = await ethers.getSigners()
+  const Oracle2 = Oracle.connect(signers[0])
+  const oracle = await Oracle2.deploy(linkToken.address, signers[0].address);
   await oracle.deployed();
+  console.log("Oracle deployed!")
 
-  await oracle.functions.setFulfillmentPermission(nodeAddress, true)
+  await oracle.functions.setAuthorizedSenders([nodeAddress])
+  authorized = await oracle.isAuthorizedSender(nodeAddress)
 
+  console.log("Is authorized:", authorized)
   console.log("Link Token deployed to:", linkToken.address);
   console.log("Oracle deployed to:", oracle.address);
 }
