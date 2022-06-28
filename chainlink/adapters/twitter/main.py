@@ -47,30 +47,51 @@ async def get_api_key(
 
 
 # TODO: How would this work wihtout specifying a username?
-@app.post("/latest_tweet_ts/")
-def latest_tweet_ts(request: Request) -> dict:
+@app.post("/router/")
+def router(request: Request) -> dict:
     """Returns the timestamp of the latest tweet for the given user.
-
     Args:
         request (Request): The request object.
-
     Returns:
         dict: Dict with timestamp of the latest tweet.
     """
-    username = request.data["username"]
-    user = client.get_user(username=username).data
-    data = client.get_users_tweets(user.id, tweet_fields=["created_at"]).data
-    tweet = data[0]
-    ts = int(tweet.created_at.timestamp())
+    if not request.data['userid']:
+        if 'username' in request.data:
+            username = request.data["username"]
+            userid = get_userid(username)
+            request.data['userid'] = userid
+        else:
+            raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail="Must either specify userid or username.")
+    if not 'method' in request.data:
+        raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail="Must specify method.")
+
+    method = eval(request.data['method'])
+    payload = method(request)
+    request.data['payload'] = payload
+    print(request)
+
     return {
         "jobRunID": request.id,
-        "data": ts,
+        "data": request.data,
         "statusCode": 200,
     }
 
+@app.post("/latest_tweet_ts/")
+def latest_tweet_ts(request: Request) -> int:
+    userid = request.data['userid']
+    data = client.get_users_tweets(userid, tweet_fields=["created_at"]).data
+    tweet = data[0]
+    ts = int(tweet.created_at.timestamp())
+    return ts
+
+
+@app.get("/userid/{username}")
+def get_userid(username: str) -> int:
+    return client.get_user(username=username).data.id
+
 
 @app.get("/since_last_tweet/likes")
-def likes_since_last_tweet(username: str, unix_ts: int) -> int:
+def likes_since_ts(request: Request) -> int:
     # sourcery skip: inline-immediately-returned-variable
     """Returns the number of likes since a given unix timetamp for the given username.
 
@@ -81,10 +102,10 @@ def likes_since_last_tweet(username: str, unix_ts: int) -> int:
     Returns:
         int: Number of likes since the given unix timestamp
     """
-
-    user = client.get_user(username=username).data
+    userid = request.data['userid']
+    unix_ts = int(request.data['unix_ts'])
     data = client.get_users_tweets(
-        user.id,
+        userid,
         tweet_fields=["created_at", "public_metrics"],
         start_time=dt.fromtimestamp(unix_ts, tz=tz.utc).isoformat(),
     ).data
