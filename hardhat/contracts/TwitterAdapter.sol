@@ -12,10 +12,21 @@ contract ChainlinkTwitter is ChainlinkClient {
     address private oracle;
     bytes32 private jobId;
     uint256 private fee;
-    uint256 public timeStamp;
-    uint256 public likes;
-    bool public fullfilled1;
-    bool public fullfilled2;
+
+    enum APIFuncToCall{
+        LATEST_TWEET_TS, 
+        LIKES_SINCE_TS
+        }
+
+    struct TwitterRequest{
+        bytes32 Id;
+        APIFuncToCall method;
+        uint256 userId;
+        bool fulfilled;
+        uint256 payload;
+    }
+
+    mapping (bytes32 => TwitterRequest) madeRequests;
     
     //only the contract owner should be able to tweet
     address public owner;
@@ -31,37 +42,52 @@ contract ChainlinkTwitter is ChainlinkClient {
     	owner = msg.sender;
     }
 
+    function getRequest(bytes32 _requestId) public view returns (TwitterRequest memory){
+        return madeRequests[_requestId];
+    }
     //tweets the supplied string
-    function requestLastUserTweetTs(string memory username) public onlyOwner {
+    function requestLastUserTweetTs(string memory username) 
+    public 
+    // onlyOwner 
+    returns (bytes32) {
         console.log("TA: Received %s", username);
-        Chainlink.Request memory req = buildChainlinkRequest(jobId, address(this), this.fulfillLastUserTweetTs.selector);
+        Chainlink.Request memory req = buildChainlinkRequest(jobId, address(this), this.fulfill.selector);
         req.add("username", username);
         req.add("method", "latest_tweet_ts");
         req.add("userid", "");
         req.add("unix_ts", "");
-        sendChainlinkRequestTo(oracle, req, 0);
+        bytes32 requestId = sendChainlinkRequestTo(oracle, req, 0);
+        return requestId;
     }
 
-    function requestLikesSinceTs(string memory _username, string memory _timeStamp) public onlyOwner {
+    function requestLikesSinceTs(string memory _username, string memory _timeStamp)
+    public 
+    // onlyOwner 
+    returns (bytes32) {
         console.log("TA: Received %s", _username);
-        Chainlink.Request memory req = buildChainlinkRequest(jobId, address(this), this.fulfillLikesSinceTs.selector);
+        Chainlink.Request memory req = buildChainlinkRequest(jobId, address(this), this.fulfill.selector);
         req.add("username", _username);
         req.add("method", "likes_since_ts");
         req.add("userid", "");
         req.add("unix_ts", _timeStamp);
-        sendChainlinkRequestTo(oracle, req, 0);
+        bytes32 requestId = sendChainlinkRequestTo(oracle, req, 0);
+        saveRequest(requestId, APIFuncToCall.LIKES_SINCE_TS);
+        return requestId;
+    }
+
+    function saveRequest(bytes32 requestId, APIFuncToCall method) internal {
+        TwitterRequest storage request = madeRequests[requestId];
+        request.Id = requestId;
+        request.method = method;
     }
         
     //callback function
-    function fulfillLastUserTweetTs(bytes32 _requestId, uint256 _payload, uint256 _userId) public recordChainlinkFulfillment(_requestId) {
-        fullfilled1 = true;
-        timeStamp = _payload;
-        console.log("Last timestamp of Tweet", timeStamp);
+    function fulfill(bytes32 _requestId, uint256 _payload, uint256 _userId) public recordChainlinkFulfillment(_requestId) {
+        TwitterRequest storage request = madeRequests[_requestId];
+        request.fulfilled = true;
+        request.payload = _payload;
+        request.userId = _userId;
+        console.log("Payload ", _payload);
     }
 
-    function fulfillLikesSinceTs(bytes32 _requestId, uint256 _payload, uint256 _userId) public recordChainlinkFulfillment(_requestId) {
-        fullfilled2 = true;
-        likes = _payload;
-        console.log("Last timestamp of Tweet", likes);
-    }
 }

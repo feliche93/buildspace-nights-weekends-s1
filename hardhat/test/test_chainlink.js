@@ -14,19 +14,23 @@ var OracleAbiBlob = fs.readFileSync('artifacts/@chainlink/contracts/src/v0.7/Ope
 const oracleAbi = JSON.parse(OracleAbiBlob).abi
 const linkTokenAbi = JSON.parse(linkTokenAbiBlob).abi
 
-describe("Greeter", function () {
+describe("Twitter adapter", function () {
   it("Should return the new greeting once it's changed", async function () {
     let signers = await ethers.getSigners()
-    await signers[1].sendTransaction({
-      to: node_addr,
-      value: ethers.utils.parseEther("1.0")
-    });
+    // await signers[1].sendTransaction({
+    //   to: node_addr,
+    //   value: ethers.utils.parseEther("1.0")
+    // });
 
     const TwitterAdapter = await ethers.getContractFactory("ChainlinkTwitter");
-    TwitterAdapter
     const twitterAdapter = await TwitterAdapter.deploy(linktok_addr, oracle_addr);
     await twitterAdapter.deployed();
     console.log("Twitter adapter deployed to: %s", twitterAdapter.address)
+
+    const GoalContract = await ethers.getContractFactory("GoalContract");
+    const goalContract = await GoalContract.deploy(twitterAdapter.address);
+    await goalContract.deployed();
+    console.log("Goal Contract deployed to: %s", goalContract.address)
 
     let oracle = new ethers.Contract(oracle_addr, oracleAbi, signers[0])
     let nodeStatus = await oracle.functions.isAuthorizedSender(node_addr)
@@ -50,14 +54,17 @@ describe("Greeter", function () {
     balanceNode = await linkToken.functions.balanceOf(node_addr)
     console.log(balanceNode)
 
-    await twitterAdapter.functions.requestLastUserTweetTs("hagenho_eth")
-    while (!await twitterAdapter.fullfilled1());
-    let timestamp = await twitterAdapter.timeStamp()
-    console.log(timestamp)
-    await twitterAdapter.functions.requestLikesSinceTs("hagenho_eth", (timestamp - 300000).toString())
-    while (!await twitterAdapter.fullfilled2());
-    let likes = await twitterAdapter.likes()
-    console.log(likes)
+    requestId = await goalContract.functions.dummySend("hagenho_eth")
+    // console.log("Request sent ", requestId)
+    while (await goalContract.functions.dummyReceive() == 0);
+    payload = await goalContract.functions.dummyReceive()
+    console.log("Payload", payload)
+    
+    // requestId = await twitterAdapter.functions.requestLikesSinceTs("hagenho_eth", (timestamp - 300000).toString())
+    // console.log("Request sent ", requestId)
+    // while (!await twitterAdapter.madeRequests(requestId)[3]);
+    // let likes = await twitterAdapter.madeRequests(requestId)[4]
+    // console.log(likes)
     // expect().to.equal(200)
   
     // expect(await greeter.greet()).to.equal("Hello, world!");
@@ -70,3 +77,4 @@ describe("Greeter", function () {
     // expect(await greeter.greet()).to.equal("Hola, mundo!");
   });
 });
+

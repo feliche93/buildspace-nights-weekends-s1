@@ -5,27 +5,11 @@ import "hardhat/console.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
+import './TwitterAdapter.sol';
 // import "@openzeppelin/contracts/access/Ownable.sol";
 // https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/access/Ownable.sol
 
 contract GoalContract is ReentrancyGuard {
-    using Counters for Counters.Counter;
-    Counters.Counter public goalIds;
-    Counters.Counter public goalsAchieved;
-
-    struct Goal {
-        uint256 goalId;
-        string goal;
-        uint256 deadline;
-        address goalOwnerAddress;
-        address goalCheckerAddress;
-        uint256 amountPledged;
-        bool achieved;
-        bool withdrawn;
-        bool started;
-        bool ended;
-    }
-
     event GoalCreated(
         uint256 goalId,
         string goal,
@@ -53,13 +37,45 @@ contract GoalContract is ReentrancyGuard {
         uint256 amountPledged
     );
 
-    mapping(uint256 => Goal) public idToGoal;
-    mapping(address => uint256) public amountLockedByAddress;
+    using Counters for Counters.Counter;
+    Counters.Counter public goalIds;
+    Counters.Counter public goalsAchieved;
 
-    constructor() payable {
-        // what should we do on deploy?
+    struct Goal {
+        uint256 goalId;
+        string goal;
+        uint256 deadline;
+        address goalOwnerAddress;
+        address goalCheckerAddress;
+        uint256 amountPledged;
+        bool achieved;
+        bool withdrawn;
+        bool started;
+        bool ended;
     }
 
+    mapping(uint256 => Goal) public idToGoal;
+    mapping(address => uint256) public amountLockedByAddress;
+    enum APIFuncToCall{
+        LATEST_TWEET_TS, 
+        LIKES_SINCE_TS
+        }
+    address twitterAdapterAddress;
+    mapping(address => bytes32) userLastReqId;
+    constructor(address _twitterAdapterAddress) payable {
+        twitterAdapterAddress = _twitterAdapterAddress;
+    }
+
+    function dummySend(string memory _string) public {
+        ChainlinkTwitter twitterAdapter = ChainlinkTwitter(twitterAdapterAddress);
+        userLastReqId[msg.sender] = twitterAdapter.requestLastUserTweetTs(_string);
+    }
+
+    function dummyReceive() public view returns (uint256){
+        ChainlinkTwitter twitterAdapter = ChainlinkTwitter(twitterAdapterAddress);
+        ChainlinkTwitter.TwitterRequest memory request = twitterAdapter.getRequest(userLastReqId[msg.sender]);
+        return request.payload;
+    }
     function createGoal(
         string memory goal,
         uint256 deadlineInDays,
