@@ -6,7 +6,7 @@ import '@chainlink/contracts/src/v0.8/ConfirmedOwner.sol';
 import "hardhat/console.sol";
 
 
-contract ChainlinkTwitter is ChainlinkClient {
+contract ChainlinkTwitterAdapter is ChainlinkClient {
     using Chainlink for Chainlink.Request;
     uint256 private constant ORACLE_PAYMENT = 1 * LINK_DIVISIBILITY; 
     address private oracle;
@@ -27,19 +27,12 @@ contract ChainlinkTwitter is ChainlinkClient {
     }
 
     mapping (bytes32 => TwitterRequest) madeRequests;
-    
-    //only the contract owner should be able to tweet
-    address public owner;
-    modifier onlyOwner {
-        require(msg.sender == owner, "Not authorized");
-        _;
-    }
 
     constructor(address _linkTokenAddr, address _oralcleAddr) {
     	setChainlinkToken(_linkTokenAddr);
     	oracle = _oralcleAddr; // oracle address
     	jobId = '2cc926226a6a4975ae499c873525e881'; //job id
-    	owner = msg.sender;
+
     }
 
     function getRequest(bytes32 _requestId) public view returns (TwitterRequest memory){
@@ -48,7 +41,6 @@ contract ChainlinkTwitter is ChainlinkClient {
     //tweets the supplied string
     function requestLastUserTweetTs(string memory username) 
     public 
-    // onlyOwner 
     returns (bytes32) {
         console.log("TA: Received %s", username);
         Chainlink.Request memory req = buildChainlinkRequest(jobId, address(this), this.fulfill.selector);
@@ -62,7 +54,6 @@ contract ChainlinkTwitter is ChainlinkClient {
 
     function requestLikesSinceTs(string memory _username, string memory _timeStamp)
     public 
-    // onlyOwner 
     returns (bytes32) {
         console.log("TA: Received %s", _username);
         Chainlink.Request memory req = buildChainlinkRequest(jobId, address(this), this.fulfill.selector);
@@ -82,12 +73,12 @@ contract ChainlinkTwitter is ChainlinkClient {
     }
         
     //callback function
-    function fulfill(bytes32 _requestId, uint256 _payload, uint256 _userId) public recordChainlinkFulfillment(_requestId) {
-        TwitterRequest storage request = madeRequests[_requestId];
-        request.fulfilled = true;
-        request.payload = _payload;
-        request.userId = _userId;
-        console.log("Payload ", _payload);
+    function fulfill(bytes32 _requestId, uint256 _payload, uint256 _userId) virtual public recordChainlinkFulfillment(_requestId) {
+        // TwitterRequest storage request = madeRequests[_requestId];
+        // request.fulfilled = true;
+        // request.payload = _payload;
+        // request.userId = _userId;
+        // console.log("Payload ", _payload);
     }
 
 }
