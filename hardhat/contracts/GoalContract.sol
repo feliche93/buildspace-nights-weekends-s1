@@ -34,77 +34,114 @@ contract GoalContract is ReentrancyGuard, ChainlinkTwitterAdapter{
 
     struct Goal {
         uint256 goalId;
-        bytes32 requestId;
         uint256 userId;
-        string goal;
+        string goalName;
         uint256 metric;
         uint256 deadline;
         address goalOwnerAddress;
         uint256 amountPledged;
+        bool achieved;
+        bool withdrawn;
+        bool ended;
+    }
+    
+    struct GoalRequest{
+        string goalName;
+        uint256 deadline;
+        address goalOwnerAddress;
+        uint256 amountPledged;
         bool fulfilled;
-        // bool achieved;
-        // bool withdrawn;
-        // bool started;
-        // bool ended;
     }
 
     mapping(uint256 => Goal) public idToGoal;
     mapping(address => uint[]) public usersGoalIds;
     mapping(address => uint256) public amountLockedByAddress;
 
-    mapping(address => bytes32) userLastReqId;
-    mapping(bytes32 => uint) requestIdGoalId;
+    mapping(address => bytes32) public userLastReqId;
+    mapping(bytes32 => GoalRequest) public requestIdGoalRequest;
     constructor(address _linkTokenAddr, address _oralcleAddr) 
     ChainlinkTwitterAdapter(_linkTokenAddr, _oralcleAddr)
     payable {
     }
 
-    // function dummySend(string memory _string) public {
-    //     ChainlinkTwitter twitterAdapter = ChainlinkTwitter(twitterAdapterAddress);
-    //     userLastReqId[msg.sender] = twitterAdapter.requestLastUserTweetTs(_string);
-    // }
 
-    // function dummyReceive() public view returns (uint256){
-    //     ChainlinkTwitter twitterAdapter = ChainlinkTwitter(twitterAdapterAddress);
-    //     ChainlinkTwitter.TwitterRequest memory request = twitterAdapter.getRequest(userLastReqId[msg.sender]);
-    //     return request.payload;
-    // }
     function createGoal(
         string memory goalName,
         string memory username,
         uint256 deadlineInDays
-    ) public payable {
+    )
+    public
+    payable{
         require(deadlineInDays > 0, "Deadline must be at least 1 day");
+     
         bytes32 requestId = requestLastUserTweetTs(username);
+        userLastReqId[msg.sender] = requestId;
+        requestIdGoalRequest[requestId] = GoalRequest(
+            goalName,
+            block.timestamp + deadlineInDays * 1 days,
+            msg.sender,
+            msg.value,
+            false
+        );
+    }
 
+
+    function fulfill(
+        bytes32 _requestId,
+        uint256 _payload,
+        uint256 _userId
+    )
+    public 
+    override
+    recordChainlinkFulfillment(_requestId){    
+        GoalRequest memory greq = requestIdGoalRequest[_requestId];
+        greq.fulfilled = true;
         goalIds.increment();
         uint256 goalId = goalIds.current();
-        requestIdGoalId[requestId] = goalId;
         uint[] storage userGoalIds = usersGoalIds[msg.sender];
         userGoalIds.push(goalId);
-
-        // keeping a glboal mapping of each challengers address to the amount they have locked
-        amountLockedByAddress[payable(msg.sender)] += msg.value;
-
-        idToGoal[goalId] = Goal(
+        amountLockedByAddress[payable(msg.sender)] += greq.amountPledged;
+        Goal memory goal = Goal(
             goalId, // goalId
-            requestId,
-            0,
-            goalName, // goal
-            0,
-            block.timestamp + deadlineInDays * 1 seconds, // deadline calculated from timestamp of block on
-            payable(msg.sender), // goalOwnerAddress
-            msg.value, // amountPledged
-            false);
-            // false, // achieved
-            // false, // withdrawn
-            // true, // started
-            // false // ended
-        // );
+            _userId,
+            greq.goalName, // goal
+            _payload,
+            greq.deadline,
+            greq.goalOwnerAddress,
+            greq.amountPledged,
+            false, // achieved
+            false, // withdrawn
+            false // ended
+        );
+        idToGoal[goalId] = goal;
+        emit GoalCreated(
+            goal
+        );
+    }
 
-        // emit GoalCreated(
-        //     goal
-        // );
+
+    function getUserGoals(
+        address userAddr
+    )
+    public
+    view
+    returns (Goal[] memory){
+        uint256[] memory userGoalIds = usersGoalIds[userAddr];
+        Goal[] memory goals = new Goal[](userGoalIds.length);
+        for (uint i=0; i < userGoalIds.length; i++){
+            goals[i] = idToGoal[userGoalIds[i]];
+        }
+        return goals;
+    }
+
+    function getLastUserGoal(
+        address userAddr
+    ) 
+    public 
+    view 
+    returns (Goal memory){
+        uint256[] memory userGoalIds = usersGoalIds[userAddr];
+        return idToGoal[userGoalIds[userGoalIds.length-1]];
     }
 
     // function evaluateGoal(uint256 goalId, bool achieved) public {
@@ -255,28 +292,6 @@ contract GoalContract is ReentrancyGuard, ChainlinkTwitterAdapter{
     //     return goals;
     // }
 
-    function fulfill(bytes32 _requestId, uint256 _payload, uint256 _userId) public override recordChainlinkFulfillment(_requestId) {
-        uint256 goalId = requestIdGoalId[_requestId];
-        Goal storage goal = idToGoal[goalId];
-        goal.fulfilled = true;
-        goal.metric = _payload;
-        goal.userId = _userId;
-        console.log("Payload ", _payload);
-    }
-
-    function getUserGoals(address userAddr) public view returns (Goal[] memory){
-        uint256[] memory userGoalIds = usersGoalIds[userAddr];
-        Goal[] memory goals = new Goal[](userGoalIds.length);
-        for (uint i=0; i < userGoalIds.length; i++){
-            goals[i] = idToGoal[userGoalIds[i]];
-        }
-        return goals;
-    }
-
-    function getLastUserGoal(address userAddr) public view returns (Goal memory){
-        uint256[] memory userGoalIds = usersGoalIds[userAddr];
-        return idToGoal[userGoalIds[userGoalIds.length-1]];
-    }
 
     // to support receiving ETH by default
     receive() external payable {}

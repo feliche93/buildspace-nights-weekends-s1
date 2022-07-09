@@ -54,14 +54,17 @@ describe("Twitter adapter", function () {
     console.log(balanceNode)
 
     requestId = await goalContract.functions.createGoal("goal", "hagenho_eth", 7)
-    // requestId = await goalContract.functions.requestLastUserTweetTs("hagenho_eth")
-    // console.log("Request sent ", requestId)
-    while (!await goalContract.functions.getLastUserGoal(signers[0].address)[0]){
-      payload = await goalContract.functions.getLastUserGoal(signers[0].address)
-      console.log(payload)  
-    }
-    payload = await goalContract.functions.getLastUserGoal(signers[0].address)
-    console.log("Payload", payload)
+    
+    requestId = await goalContract.functions.userLastReqId(signers[0].address)
+    console.log(requestId[0])
+    console.log(typeof(await goalContract.functions.requestIdGoalRequest(requestId[0])))
+    // while (!await goalContract.functions.requestIdGoalRequest(requestId[0])){
+    //   requestId = await goalContract.functions.userLastReqId(signers[0].address)
+    //   goalReq = await goalContract.functions.requestIdGoalRequest(requestId[0])
+    //   console.log(goalReq)  
+    // }
+    // payload = await goalContract.functions.getLastUserGoal(signers[0].address)
+    // console.log("Payload", payload)
     
     // requestId = await goalContract.functions.requestLikesSinceTs("hagenho_eth", (timestamp - 300000).toString())
     // console.log("Request sent ", requestId)

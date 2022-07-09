@@ -7,6 +7,7 @@ import pendulum
 
 from fastapi import FastAPI, HTTPException, Security
 from fastapi.security.api_key import APIKeyHeader, APIKeyQuery
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from starlette.status import HTTP_403_FORBIDDEN
 from tweepy import Client
@@ -45,6 +46,13 @@ async def get_api_key(
     else:
         raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail="Could not validate credentials")
 
+@app.exception_handler(Exception)
+async def unicorn_exception_handler(request: Request, exc: Exception):
+    return JSONResponse(
+        jobRunID=request.id,
+        data=request.data,
+        statusCode=413
+    )
 
 # TODO: How would this work wihtout specifying a username?
 @app.post("/router/")
@@ -70,11 +78,11 @@ def router(request: Request) -> dict:
     request.data['payload'] = payload
     print(request)
 
-    return {
-        "jobRunID": request.id,
-        "data": request.data,
-        "statusCode": 200,
-    }
+    return JSONResponse(
+        jobRunID=request.id,
+        data=request.data,
+        statusCode=200,
+    )
 
 @app.post("/latest_tweet_ts/")
 def latest_tweet_ts(request: Request) -> int:
