@@ -5,10 +5,10 @@ const { sign } = require("crypto");
 const { time } = require("console");
 // TESTNET SPECIFIC
 // RUN ORACLE AND LINK DEPLOYMENT AN PASTE ADRESSES HERE
-const linktok_addr = "0x467472B3FD8980d901E0A4055a2bF20a370e5F02"
-const oracle_addr = "0xA65952CE9D220B0106f7902aB04E08a124F684Dd"
+const linktok_addr = "0xB953bE15F8aa4113713E33F3c0232Fb872b3F087"
+const oracle_addr = "0x54cA4122d4778EE71A99E8868D71Abd571c39d0E"
 ////////////
-const node_addr = "0x56DDe95fFEFB87631Cf0a74B7b34D1fef8432dCA"
+const node_addr = "0x6a0014AB4d54529FB5ec93D6A7B6AF80b3d22E37"
 var linkTokenAbiBlob = fs.readFileSync('artifacts/link_token/contracts/LinkToken.sol/LinkToken.json')
 var OracleAbiBlob = fs.readFileSync('artifacts/@chainlink/contracts/src/v0.7/Operator.sol/Operator.json')
 const oracleAbi = JSON.parse(OracleAbiBlob).abi
@@ -17,18 +17,18 @@ const linkTokenAbi = JSON.parse(linkTokenAbiBlob).abi
 describe("Twitter adapter", function () {
   it("Should return the new greeting once it's changed", async function () {
     let signers = await ethers.getSigners()
-    // await signers[1].sendTransaction({
-    //   to: node_addr,
-    //   value: ethers.utils.parseEther("1.0")
-    // });
+    await signers[1].sendTransaction({
+      to: node_addr,
+      value: ethers.utils.parseEther("1.0")
+    });
 
-    const TwitterAdapter = await ethers.getContractFactory("ChainlinkTwitter");
-    const twitterAdapter = await TwitterAdapter.deploy(linktok_addr, oracle_addr);
-    await twitterAdapter.deployed();
-    console.log("Twitter adapter deployed to: %s", twitterAdapter.address)
+    // const TwitterAdapter = await ethers.getContractFactory("ChainlinkTwitter");
+    // const twitterAdapter = await TwitterAdapter.deploy(linktok_addr, oracle_addr);
+    // await twitterAdapter.deployed();
+    // console.log("Twitter adapter deployed to: %s", twitterAdapter.address)
 
     const GoalContract = await ethers.getContractFactory("GoalContract");
-    const goalContract = await GoalContract.deploy(twitterAdapter.address);
+    const goalContract = await GoalContract.deploy(linktok_addr, oracle_addr);
     await goalContract.deployed();
     console.log("Goal Contract deployed to: %s", goalContract.address)
 
@@ -38,13 +38,12 @@ describe("Twitter adapter", function () {
     let linkToken = new ethers.Contract(linktok_addr, linkTokenAbi, signers[0])
     await linkToken.functions.transfer(oracle_addr, 200)
     await linkToken.functions.transfer(node_addr, 200)
-    await linkToken.functions.transfer(twitterAdapter.address, 200)
     let balanceOwner = await linkToken.functions.balanceOf(signers[0].address)
     console.log(balanceOwner)
 
-    while (await linkToken.functions.balanceOf(twitterAdapter.address) == 0);
-    balanceAdapter = await linkToken.functions.balanceOf(twitterAdapter.address)
-    console.log(balanceAdapter)
+    // while (await linkToken.functions.balanceOf(twitterAdapter.address) == 0);
+    // balanceAdapter = await linkToken.functions.balanceOf(twitterAdapter.address)
+    // console.log(balanceAdapter)
 
     while (await linkToken.functions.balanceOf(oracle_addr) == 0);
     balanceOracle = await linkToken.functions.balanceOf(oracle_addr)
@@ -54,16 +53,20 @@ describe("Twitter adapter", function () {
     balanceNode = await linkToken.functions.balanceOf(node_addr)
     console.log(balanceNode)
 
-    requestId = await goalContract.functions.dummySend("hagenho_eth")
+    requestId = await goalContract.functions.createGoal("goal", "hagenho_eth", 7)
+    // requestId = await goalContract.functions.requestLastUserTweetTs("hagenho_eth")
     // console.log("Request sent ", requestId)
-    while (await goalContract.functions.dummyReceive() == 0);
-    payload = await goalContract.functions.dummyReceive()
+    while (!await goalContract.functions.getLastUserGoal(signers[0].address)[0]){
+      payload = await goalContract.functions.getLastUserGoal(signers[0].address)
+      console.log(payload)  
+    }
+    payload = await goalContract.functions.getLastUserGoal(signers[0].address)
     console.log("Payload", payload)
     
-    // requestId = await twitterAdapter.functions.requestLikesSinceTs("hagenho_eth", (timestamp - 300000).toString())
+    // requestId = await goalContract.functions.requestLikesSinceTs("hagenho_eth", (timestamp - 300000).toString())
     // console.log("Request sent ", requestId)
-    // while (!await twitterAdapter.madeRequests(requestId)[3]);
-    // let likes = await twitterAdapter.madeRequests(requestId)[4]
+    // while (!await goalContract.madeRequests(requestId)[3]);
+    // let likes = await goalContract.madeRequests(requestId)[4]
     // console.log(likes)
     // expect().to.equal(200)
   

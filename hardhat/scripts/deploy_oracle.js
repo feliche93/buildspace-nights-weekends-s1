@@ -5,7 +5,7 @@
 // Runtime Environment's members available in the global scope.
 const hre = require("hardhat");
 const ethers = hre.ethers
-const nodeAddress = "0x56DDe95fFEFB87631Cf0a74B7b34D1fef8432dCA";
+const nodeAddress = "0x6a0014AB4d54529FB5ec93D6A7B6AF80b3d22E37";
 
 async function main() {
   // Hardhat always runs the compile task when running scripts with its command
