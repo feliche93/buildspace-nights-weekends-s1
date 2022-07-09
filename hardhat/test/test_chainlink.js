@@ -58,11 +58,11 @@ describe("Twitter adapter", function () {
     requestId = await goalContract.functions.userLastReqId(signers[0].address)
     console.log(requestId[0])
     console.log(typeof(await goalContract.functions.requestIdGoalRequest(requestId[0])))
-    // while (!await goalContract.functions.requestIdGoalRequest(requestId[0])){
-    //   requestId = await goalContract.functions.userLastReqId(signers[0].address)
-    //   goalReq = await goalContract.functions.requestIdGoalRequest(requestId[0])
-    //   console.log(goalReq)  
-    // }
+    while (!await goalContract.functions.requestIdGoalRequest(requestId[0])){
+      requestId = await goalContract.functions.userLastReqId(signers[0].address)
+      goalReq = await goalContract.functions.requestIdGoalRequest(requestId[0])
+      console.log(goalReq)  
+    }
     // payload = await goalContract.functions.getLastUserGoal(signers[0].address)
     // console.log("Payload", payload)
     
