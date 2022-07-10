@@ -1,5 +1,7 @@
 require("@nomiclabs/hardhat-waffle");
 require("@appliedblockchain/chainlink-plugins-fund-link");
+require("@nomiclabs/hardhat-ethers");
+require('hardhat-deploy');
 
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
@@ -46,5 +48,9 @@ module.exports = {
         blockNumber: 30018042
       }
     }
-  }
+  },
+  namedAccounts: {
+    deployer: 0,
+    nodeAddress: "0x75128a83e119B0477DbAf25c034b27943844688e"
+  },
 }
