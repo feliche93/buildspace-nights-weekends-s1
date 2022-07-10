@@ -3,9 +3,6 @@ import { useCountdown } from "../libs/useCountdown";
 
 function Countdown({ endDate }) {
   const [days, hours, minutes, seconds] = useCountdown(endDate);
-
-  console.log(days, hours, minutes, seconds);
-
   return (
     <div>
       <p className="text-base pb-1">Time remaining</p>

@@ -1,5 +1,10 @@
 import React from "react";
 import { useForm } from "react-hook-form";
+import {
+  useMoralis,
+  useNewMoralisObject,
+  useMoralisQuery,
+} from "react-moralis";
 
 export default function CreateGoal() {
   const {
@@ -8,7 +13,26 @@ export default function CreateGoal() {
     watch,
     formState: { errors },
   } = useForm();
-  const onSubmit = (data) => console.log(data);
+
+  const { user } = useMoralis();
+  const { isSaving, error, save } = useNewMoralisObject("Goals");
+
+  const onSubmit = async (data) => {
+    data.startDate = new Date(data.startDate).toISOString();
+    data.endDate = new Date(data.endDate).toISOString();
+    data.progress = 0;
+    data.percent = 0;
+    data.userId = user?.id;
+    data.status = "pending";
+
+    console.log(data);
+
+    await save({
+      ...data,
+    });
+
+    console.log("error", error);
+  };
 
   return (
     <div className="p-0 md:p-5">
@@ -77,7 +101,7 @@ export default function CreateGoal() {
               <span className="label-text">Start Date</span>
             </label>
             <input
-              {...register("sartDate", { required: true })}
+              {...register("startDate", { required: true })}
               type="date"
               className="input input-bordered w-full"
             />
@@ -104,12 +128,36 @@ export default function CreateGoal() {
               </span>
             </label>
           </div>
+
+          {/* KPI Amount */}
+          <div className="form-control w-full">
+            <label className="label">
+              <span className="label-text">Amount of USDC pledged</span>
+            </label>
+            <input
+              {...register("pledged", { required: true, min: 1 })}
+              defaultValue={1}
+              type="number"
+              className="input input-bordered w-full"
+            />
+            <label className="label">
+              <span className="label-text-alt">
+                Please enter an amount of USDC you pledge to reach your goal.
+              </span>
+            </label>
+          </div>
         </div>
         {/* Submitt Button */}
         <div className="pt-5">
-          <button className="btn btn-primary" type="submit">
-            Create
-          </button>
+          {isSaving ? (
+            <button className="btn btn-primary loading" type="submit">
+              Create
+            </button>
+          ) : (
+            <button className="btn btn-primary" type="submit">
+              Create
+            </button>
+          )}
         </div>
       </form>
     </div>

@@ -5,7 +5,15 @@ import GoalOwner from "../../components/GoalOwner";
 import PledgedAmount from "../../components/PledgedAmount";
 import Progress from "../../components/Progress";
 
-function GoalCard({ kpi, walletAddress, target, endDate, percent, status }) {
+function GoalCard({
+  kpi,
+  walletAddress,
+  target,
+  endDate,
+  percent,
+  status,
+  pledged,
+}) {
   return (
     <div className="card max-w-sm bg-base-300 shadow-xl">
       <div className="card-body">
@@ -26,7 +34,7 @@ function GoalCard({ kpi, walletAddress, target, endDate, percent, status }) {
           <GoalOwner walletAddress={walletAddress} />
           <Goal kpi={kpi} target={target} />
           <Countdown endDate={endDate} />
-          <PledgedAmount value={"70"} asset={"USDC"} />
+          <PledgedAmount value={pledged} asset={"USDC"} />
           <Progress percent={percent} />
         </div>
         <div className="card-actions justify-end">
