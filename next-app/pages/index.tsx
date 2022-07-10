@@ -1,8 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
+import { useMoralis } from "react-moralis";
 import hero from "../public/home/hero.svg";
 
 export default function Home() {
+  const { isAuthenticated } = useMoralis();
+
   return (
     <main className="mt-16 mx-auto max-w-7xl px-4 sm:mt-24">
       {/* <div className="relative flex flex-col items-center w-96 h-96 mx-auto">
@@ -21,7 +24,7 @@ export default function Home() {
         </p>
         <div className="mt-5 max-w-md mx-auto sm:flex sm:justify-center md:mt-8">
           <div className="rounded-md shadow">
-            <Link href="/connect-wallet">
+            <Link href={isAuthenticated ? "/create-goal" : "/connect-wallet"}>
               <a className="btn sm:btn-lg btn-primary">Set up a goal</a>
             </Link>
           </div>
