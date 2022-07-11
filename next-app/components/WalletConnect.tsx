@@ -8,21 +8,23 @@ function WalletConnect({ cta, logoPath, handleLogin }) {
 
   return (
     <div className="mt-6 grid grid-cols-1">
-      <div>
+      {isAuthenticating ? (
         <button
           onClick={handleLogin}
-          className="w-full h-full inline-flex items-center justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-900 "
-        >
-          {isAuthenticating ? (
-            <LoadingSpinner size="6" />
-          ) : (
-            <>
-              <Image src={logoPath} width={30} height={30} alt={cta} />
-              <span className="pl-4 uppercase">{cta}</span>
-            </>
-          )}
+          className="btn btn-primary btn-block loading"
+        ></button>
+      ) : (
+        <button onClick={handleLogin} className="btn btn-primary btn-block">
+          <Image
+            className="pt-2"
+            src={logoPath}
+            width={30}
+            height={30}
+            alt={cta}
+          />
+          <span className="ml-2">{cta}</span>
         </button>
-      </div>
+      )}
     </div>
   );
 }

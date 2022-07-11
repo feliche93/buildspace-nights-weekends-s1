@@ -12,6 +12,9 @@ import Image from "next/image";
 
 const navigation = [
   { name: "Home", href: "/", protected: false },
+  { name: "About", href: "/about", protected: false },
+  { name: "Create a goal", href: "/create-goal", protected: true },
+  { name: "My Goals", href: "/my-goals", protected: true },
   // { name: "Mint Member NFT", href: "/nft/member/mint", protected: true },
 ];
 
@@ -59,8 +62,8 @@ const LandingNavBar = () => {
                   /> */}
                 </a>
               </Link>
-              <div className="-mr-2 flex items-center md:hidden">
-                <Popover.Button className="bg-gray-800 rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500">
+              <div className="flex items-center md:hidden">
+                <Popover.Button className="rounded-md p-2 inline-flex items-center justify-center btn btn-outline">
                   <span className="sr-only">Open main menu</span>
                   <MenuIcon className="h-6 w-6" aria-hidden="true" />
                 </Popover.Button>
@@ -77,18 +80,13 @@ const LandingNavBar = () => {
               <div className="hidden md:flex items-center justify-end md:flex-1 lg:w-0">
                 {actions.map((action) => (
                   <Link href={action.href} key={action.name}>
-                    <a className="ml-8 whitespace-nowrap inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-blue-500 hover:bg-blue-600/90">
-                      {action.name}
-                    </a>
+                    <a className="ml-8 btn btn-primary">{action.name}</a>
                   </Link>
                 ))}
               </div>
             ) : (
               <div className="hidden md:flex items-center justify-end md:flex-1 lg:w-0">
-                <button
-                  onClick={handleLogout}
-                  className="ml-8 whitespace-nowrap inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-blue-500 hover:bg-blue-600/90"
-                >
+                <button onClick={handleLogout} className="ml-8 btn btn-primary">
                   Logout
                 </button>
               </div>
@@ -110,7 +108,7 @@ const LandingNavBar = () => {
           focus
           className="absolute z-10 top-0 inset-x-0 p-2 transition transform origin-top-right md:hidden"
         >
-          <div className="rounded-lg shadow-md bg-gray-800 ring-1 ring-black ring-opacity-5 overflow-hidden">
+          <div className="rounded-lg shadow-md bg-base-300 ring-2 ring-base-content ring-opacity-10 overflow-hidden">
             <div className="px-5 pt-4 flex items-center justify-between">
               <div>
                 {/* <Image
@@ -122,7 +120,7 @@ const LandingNavBar = () => {
                 /> */}
               </div>
               <div className="-mr-2">
-                <Popover.Button className="bg-gray-500 rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-violet-500">
+                <Popover.Button className=" rounded-md p-2 inline-flex items-center justify-center btn btn-outline">
                   <span className="sr-only">Close menu</span>
                   <XIcon className="h-6 w-6" aria-hidden="true" />
                 </Popover.Button>
@@ -137,9 +135,7 @@ const LandingNavBar = () => {
               <>
                 {actions.map((action) => (
                   <Link href="/connect-wallet" key={action.name}>
-                    <a className="block w-full px-5 py-3 text-center font-medium text-white bg-blue-500 hover:bg-blue-600/90">
-                      {action.name}
-                    </a>
+                    <a className="btn btn-primary w-full">{action.name}</a>
                   </Link>
                 ))}
                 {/* <Link href='/login'>
@@ -157,7 +153,7 @@ const LandingNavBar = () => {
               <div>
                 <button
                   onClick={handleLogout}
-                  className="block w-full px-5 py-3 text-center font-medium text-white bg-blue-500 hover:bg-blue-600/90"
+                  className="btn btn-primary w-full"
                 >
                   Logout
                 </button>

@@ -8,11 +8,11 @@ function NavLinks(props) {
   const { isAuthenticated } = useMoralis();
 
   const { navigation } = props;
-  const activeLink = "text-blue-500";
-  const nonAcctiveLink = "text-gray-900";
+  const activeLink = "btn btn-active btn-link";
+  const nonAcctiveLink = "btn btn-link";
   const mobileStyle =
-    "block px-3 py-2 rounded-md text-base font-medium hover:text-blue-500";
-  const DesktopStyle = "font-medium  hover:text-blue-500";
+    "block text-left px-3 py-2 rounded-md text-base font-medium hover:text-primary";
+  const DesktopStyle = "font-medium  hover:text-primary";
 
   if (isAuthenticated) {
     return (

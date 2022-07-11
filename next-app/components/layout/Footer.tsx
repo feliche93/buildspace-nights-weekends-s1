@@ -114,7 +114,7 @@ export default function Footer() {
             </a>
           ))}
         </div>
-        <p className="mt-8 text-center text-base text-gray-400">
+        <p className="mt-8 text-center text-base">
           &copy; 2022 Commit 2 Earn. All rights reserved.
         </p>
       </div>
