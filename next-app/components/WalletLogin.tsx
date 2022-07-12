@@ -3,18 +3,21 @@ import { useMoralis } from "react-moralis";
 import WalletConnect from "./WalletConnect";
 import { ExclamationIcon } from "@heroicons/react/outline";
 import SectionContent from "./UI/SectionContent";
+import { usePlausible } from "next-plausible";
 
 function WalletLogin() {
   const { isAuthenticating, authenticate } = useMoralis();
+  const plausible = usePlausible();
 
   const handleMetamaskConnect = async () => {
+    plausible("metamaskConnect");
     await authenticate({
       signingMessage: "Log in to your Commit 2 Earn Account",
     });
   };
 
   const handleWalletConnect = async () => {
-    console.log("Test");
+    plausible("walletConnect");
     await authenticate({
       signingMessage: "Log in to your Commit 2 Earn Account",
       provider: "walletconnect",
