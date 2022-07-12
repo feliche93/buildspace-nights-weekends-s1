@@ -27,7 +27,12 @@ describe('Test Chainlink Flow', () => {
         await deployments.fixture("GoalContract")
         const goalContract = await ethers.getContract("GoalContract");
         await expect(goalContract.createGoal('Test', 'hagenho_eth', 0)).to.be.reverted;
+    });
 
+    it('Succesfully creates a goal', async function () {
+        await deployments.fixture("GoalContract")
+        const goalContract = await ethers.getContract("GoalContract");
+        await expect(goalContract.createGoal('Test', 'hagenho_eth', 1)).to.emit(goalContract, 'GoalCreated');
     });
 
 });

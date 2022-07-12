@@ -5,9 +5,16 @@ import {
   useNewMoralisObject,
   useMoralisQuery,
 } from "react-moralis";
+import { Contract, ethers } from "ethers";
+import Contracts from "../../hardhat/Contracts.json";
+
 import { usePlausible } from "next-plausible";
 
 export default function CreateGoal() {
+  const { Moralis } = useMoralis();
+  const provider = Moralis.web3;
+  const { GoalContractV0 } = Contracts.contracts;
+
   const {
     register,
     handleSubmit,
@@ -20,20 +27,49 @@ export default function CreateGoal() {
   const plausible = usePlausible();
 
   const onSubmit = async (data) => {
+    const web3Provider = await Moralis.enableWeb3();
+    const signer = web3Provider.getSigner();
+
+    let contract = new ethers.Contract(
+      GoalContractV0.address,
+      GoalContractV0.abi,
+      signer
+    );
+
+    let transaction = await contract.createGoal(
+      data.goal,
+      parseInt(data.target),
+      data.username,
+      parseInt((new Date(data.startDate).getTime() / 1000).toFixed(0)),
+      parseInt((new Date(data.endDate).getTime() / 1000).toFixed(0)),
+      Moralis.User.current().get("ethAddress")
+    );
+
+    let tx = await transaction.wait();
+
+    console.log(transaction);
+
+    return;
+
+    console.log(tx);
+
     plausible("goalCreated");
 
-    data.startDate = new Date(data.startDate).toISOString();
-    data.endDate = new Date(data.endDate).toISOString();
-    data.progress = 0;
-    data.percent = 0;
+    // data.startDate = ;
+    // data.endDate = parseInt(
+    //   (new Date(data.endDate).getTime() / 1000).toFixed(0)
+    // );
+    // data.progress = 0;
+    // data.percent = 0;
+    // data.status = "pending";
+
     data.userId = user?.id;
-    data.status = "pending";
 
     console.log(data);
 
-    await save({
-      ...data,
-    });
+    // await save({
+    //   ...data,
+    // });
 
     console.log("error", error);
   };
@@ -62,13 +98,13 @@ export default function CreateGoal() {
               </span>
             </label>
           </div>
-          {/* KPI Selection */}
+          {/* goal Selection */}
           <div className="form-control w-full">
             <label className="label">
               <span className="label-text">Pick a goal target</span>
             </label>
             <select
-              {...register("kpi", { required: true })}
+              {...register("goal", { required: true })}
               className="select select-bordered"
               defaultValue={"Status Updates"}
             >
@@ -76,12 +112,12 @@ export default function CreateGoal() {
             </select>
             <label className="label">
               <span className="label-text-alt">
-                This will be the KPI you will need to meet.
+                This will be the goal you will need to meet.
               </span>
             </label>
           </div>
 
-          {/* KPI Amount */}
+          {/* goal Amount */}
           <div className="form-control w-full">
             <label className="label">
               <span className="label-text">Total number of status updates</span>
@@ -133,13 +169,13 @@ export default function CreateGoal() {
             </label>
           </div>
 
-          {/* KPI Amount */}
+          {/* Goal Amount */}
           <div className="form-control w-full">
             <label className="label">
               <span className="label-text">Amount of USDC pledged</span>
             </label>
             <input
-              {...register("pledged", { required: true, min: 1 })}
+              {...register("amountPledged", { required: true, min: 1 })}
               defaultValue={1}
               type="number"
               className="input input-bordered w-full"

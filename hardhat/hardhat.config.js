@@ -8,11 +8,21 @@ require('dotenv').config();
 // https://hardhat.org/guides/create-task.html
 task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
   const accounts = await hre.ethers.getSigners();
-
-
   for (const account of accounts) {
     console.log(account.address);
   }
+});
+
+task("fundMetamask", "Funds the contract with ETH", async (taskArgs, hre) => {
+
+  const accounts = await hre.ethers.getSigners();
+  const metamaskAddress = process.env.METAMASK_WALLET_ADDRESS
+  const account = accounts[0];
+
+  await account.sendTransaction({
+    to: metamaskAddress,
+    value: ethers.utils.parseEther('1')
+  });
 });
 
 
@@ -52,6 +62,7 @@ module.exports = {
   },
   namedAccounts: {
     deployer: 0,
+    metamaskAddress: process.env.METAMASK_WALLET_ADDRESS,
     nodeAddress: process.env.NODE_ADDRESS,
   },
 }
