@@ -5,6 +5,7 @@ import {
   useNewMoralisObject,
   useMoralisQuery,
 } from "react-moralis";
+import { usePlausible } from "next-plausible";
 
 export default function CreateGoal() {
   const {
@@ -16,8 +17,11 @@ export default function CreateGoal() {
 
   const { user } = useMoralis();
   const { isSaving, error, save } = useNewMoralisObject("Goals");
+  const plausible = usePlausible();
 
   const onSubmit = async (data) => {
+    plausible("goalCreated");
+
     data.startDate = new Date(data.startDate).toISOString();
     data.endDate = new Date(data.endDate).toISOString();
     data.progress = 0;
