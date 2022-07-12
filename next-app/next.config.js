@@ -1,5 +1,7 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {
+const { withPlausibleProxy } = require('next-plausible')
+
+const nextConfig = withPlausibleProxy()({
   reactStrictMode: true,
   typescript: {
     // !! WARN !!
@@ -11,6 +13,6 @@ const nextConfig = {
   // images: {
   //   domains: ['media-exp2.licdn.com'],
   // },
-}
+});
 
 module.exports = nextConfig
