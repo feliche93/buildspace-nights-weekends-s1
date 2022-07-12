@@ -58,6 +58,12 @@ module.exports = {
         url: "https://polygon-mainnet.g.alchemy.com/v2/yAiPL8ralrroA3hD7WOqsZWqxq2J9Zv0",
         blockNumber: 30018042
       }
+    },
+    mumbai: {
+      url: "https://polygon-mumbai.g.alchemy.com/v2/yAiPL8ralrroA3hD7WOqsZWqxq2J9Zv0",
+      accounts: [
+        process.env.PRIVATE_KEY
+      ]
     }
   },
   namedAccounts: {
