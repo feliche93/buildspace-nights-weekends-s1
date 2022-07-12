@@ -2,17 +2,18 @@ require("@nomiclabs/hardhat-waffle");
 require("@appliedblockchain/chainlink-plugins-fund-link");
 require("@nomiclabs/hardhat-ethers");
 require('hardhat-deploy');
+require('dotenv').config();
 
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
 task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
   const accounts = await hre.ethers.getSigners();
 
+
   for (const account of accounts) {
     console.log(account.address);
   }
 });
-
 
 
 // You need to export an object to set up your config
@@ -51,6 +52,6 @@ module.exports = {
   },
   namedAccounts: {
     deployer: 0,
-    nodeAddress: "0x75128a83e119B0477DbAf25c034b27943844688e"
+    nodeAddress: process.env.NODE_ADDRESS,
   },
 }
