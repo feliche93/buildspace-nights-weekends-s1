@@ -83,7 +83,9 @@ contract GoalContractV1 is ReentrancyGuard, ChainlinkTwitterAdapter {
         string memory username,
         uint256 startDate,
         uint256 endDate
-    ) public payable {
+    ) 
+    public 
+    payable {
         // require(deadlineInDays > 0, "Deadline must be at least 1 day");
 
         bytes32 requestId = requestLastUserTweetTs(username);
@@ -107,7 +109,15 @@ contract GoalContractV1 is ReentrancyGuard, ChainlinkTwitterAdapter {
         emit GoalRequestCreated(greq);
     }
 
-    function fulfill(
+    function createGoalEvaluationRequest(
+        uint256 goalId
+    )
+    public {
+        Goal memory goal = idToGoal[goalId];
+        bytes32 requestId = requestLikesSinceTs(goal.username, goal.startDate);
+    }
+
+    function fulfillGoalRequest(
         bytes32 _requestId,
         uint256 _payload,
         uint256 _username
