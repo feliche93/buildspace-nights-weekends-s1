@@ -53,11 +53,9 @@ module.exports = {
     ]
   },
   networks: {
-    hardhat: {
-      forking: {
-        url: "https://polygon-mainnet.g.alchemy.com/v2/yAiPL8ralrroA3hD7WOqsZWqxq2J9Zv0",
-        blockNumber: 30018042
-      }
+    ganache: {
+      url: "http://127.0.0.1:8545",
+      chainId: 1337
     },
     mumbai: {
       url: "https://polygon-mumbai.g.alchemy.com/v2/yAiPL8ralrroA3hD7WOqsZWqxq2J9Zv0",
