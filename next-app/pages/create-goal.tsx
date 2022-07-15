@@ -7,7 +7,7 @@ import {
 } from "react-moralis";
 import { Contract, ethers } from "ethers";
 // import GoalContractV0 as GoalContractV0Local from "../../hardhat/deployments/loalhost/GoalContractV0.json";
-import GoalContractV0 from "../../hardhat/deployments/mumbai/GoalContractV0.json";
+import GoalContractV1 from "../../hardhat/deployments/localhost/GoalContractV1.json";
 
 import { usePlausible } from "next-plausible";
 
@@ -31,25 +31,27 @@ export default function CreateGoal() {
     const signer = web3Provider.getSigner();
 
     let contract = new ethers.Contract(
-      GoalContractV0.address,
-      GoalContractV0.abi,
+      GoalContractV1.address,
+      GoalContractV1.abi,
       signer
     );
 
-    let transaction = await contract.createGoal(
+    let transaction = await contract.createGoalRequest(
       data.goal,
       parseInt(data.target),
       data.username,
       parseInt((new Date(data.startDate).getTime() / 1000).toFixed(0)),
       parseInt((new Date(data.endDate).getTime() / 1000).toFixed(0)),
-      Moralis.User.current().get("ethAddress")
+      { value: ethers.utils.parseEther(data.amountPledged) }
     );
 
-    let tx = await transaction.wait();
+    contract.on("GoalRequestCreated", (goalRequest) => {
+      console.log(`GoalRequestCreated: ${goalRequest.target}`);
+    });
 
-    console.log(transaction);
-
-    console.log(tx);
+    contract.on("GoalCreated", (goalRequest) => {
+      console.log(`GoalCreated: ${goalRequest.fufilled}`);
+    });
 
     plausible("goalCreated");
 
@@ -63,7 +65,7 @@ export default function CreateGoal() {
 
     // data.userId = user?.id;
 
-    console.log(data);
+    // console.log(data);
 
     // await save({
     //   ...data,
@@ -179,9 +181,9 @@ export default function CreateGoal() {
                 <span className="label-text">Amount of USDC pledged</span>
               </label>
               <input
-                {...register("amountPledged", { required: true, min: 1 })}
+                {...register("amountPledged", { required: true, min: 0.001 })}
                 defaultValue={1}
-                type="number"
+                type="float"
                 className="input input-bordered w-full"
               />
               <label className="label">

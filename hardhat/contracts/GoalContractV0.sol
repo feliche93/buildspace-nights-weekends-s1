@@ -87,6 +87,9 @@ contract GoalContractV0 is ReentrancyGuard {
         goalIds.increment();
         uint256 goalId = goalIds.current();
 
+
+        console.log(goalId);
+
         idToGoal[goalId] = Goal(
             goalId, // goalId
             goal, // goal

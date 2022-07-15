@@ -5,14 +5,58 @@ import "hardhat/console.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-import './ChainlinkTwitterAdapter.sol';
+import "./ChainlinkTwitterAdapter.sol";
+
 // import "@openzeppelin/contracts/access/Ownable.sol";
 // https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/access/Ownable.sol
 
-contract GoalContract is ReentrancyGuard, ChainlinkTwitterAdapter{
-    event GoalCreated(
-        Goal goal
-    );
+contract GoalContractV1 is ReentrancyGuard, ChainlinkTwitterAdapter {
+    using Counters for Counters.Counter;
+    Counters.Counter public goalIds;
+    Counters.Counter public goalsAchieved;
+
+    struct Goal {
+        uint256 goalId;
+        uint256 username;
+        string goal;
+        uint256 target;
+        uint256 startDate;
+        uint256 endDate;
+        address goalOwnerAddress;
+        uint256 amountPledged;
+        bool achieved;
+        bool withdrawn;
+        bool ended;
+    }
+
+    struct GoalRequest {
+        string goal;
+        uint256 startDate;
+        uint256 endDate;
+        uint256 target;
+        address goalOwnerAddress;
+        uint256 amountPledged;
+        bool fulfilled;
+    }
+
+    mapping(uint256 => Goal) public idToGoal;
+    mapping(address => uint256[]) public userToGoalIds;
+    mapping(address => bytes32) public userToLastReqId;
+    mapping(bytes32 => GoalRequest) public requestIdToGoalRequest;
+    mapping(address => uint256) public amountLockedByAddress;
+
+    constructor(address _linkTokenAddr, address _oralcleAddr)
+        payable
+        ChainlinkTwitterAdapter(_linkTokenAddr, _oralcleAddr)
+    {}
+
+    receive() external payable {}
+
+    fallback() external payable {}
+
+    event GoalCreated(Goal goal);
+
+    event GoalRequestCreated(GoalRequest goalRequest);
 
     event GoalEvaluated(
         uint256 goalId,
@@ -28,85 +72,60 @@ contract GoalContract is ReentrancyGuard, ChainlinkTwitterAdapter{
         uint256 amountPledged
     );
 
-    using Counters for Counters.Counter;
-    Counters.Counter public goalIds;
-    Counters.Counter public goalsAchieved;
-
-    struct Goal {
-        uint256 goalId;
-        uint256 userId;
-        string goalName;
-        uint256 metric;
-        uint256 deadline;
-        address goalOwnerAddress;
-        uint256 amountPledged;
-        bool achieved;
-        bool withdrawn;
-        bool ended;
-    }
-    
-    struct GoalRequest{
-        string goalName;
-        uint256 deadline;
-        address goalOwnerAddress;
-        uint256 amountPledged;
-        bool fulfilled;
-    }
-
-    mapping(uint256 => Goal) public idToGoal;
-    mapping(address => uint[]) public usersGoalIds;
-    mapping(address => uint256) public amountLockedByAddress;
-
-    mapping(address => bytes32) public userLastReqId;
-    mapping(bytes32 => GoalRequest) public requestIdGoalRequest;
-    constructor(address _linkTokenAddr, address _oralcleAddr) 
-    ChainlinkTwitterAdapter(_linkTokenAddr, _oralcleAddr)
-    payable {
-    }
-
-
-    function createGoal(
-        string memory goalName,
+    // @notice Create a new goal
+    // @param goal he goal to be achieved
+    // @param username the username of the user who created the goal
+    // @param endDate the date the goal should be achieved by
+    // @dev Goal Request gets created and oracle is called to test before goal creation
+    function createGoalRequest(
+        string memory goal,
+        uint256 target,
         string memory username,
-        uint256 deadlineInDays
-    )
-    public
-    payable{
-        require(deadlineInDays > 0, "Deadline must be at least 1 day");
-     
-        bytes32 requestId = requestLastUserTweetTs(username);
-        userLastReqId[msg.sender] = requestId;
-        requestIdGoalRequest[requestId] = GoalRequest(
-            goalName,
-            block.timestamp + deadlineInDays * 1 days,
-            msg.sender,
-            msg.value,
-            false
-        );
-    }
+        uint256 startDate,
+        uint256 endDate
+    ) public payable {
+        // require(deadlineInDays > 0, "Deadline must be at least 1 day");
 
+        bytes32 requestId = requestLastUserTweetTs(username);
+
+        console.log("username: %s", username);
+
+        userToLastReqId[msg.sender] = requestId;
+
+        GoalRequest memory greq = GoalRequest(
+            goal, // e.g. "Status Updates"
+            startDate, // e.g. 1546300800
+            endDate, // unix timestamp when goal is due to be achieved
+            target, // e.g. 100
+            msg.sender, // address of the goal owner
+            msg.value, // amount of ether pledged by the goal owner
+            false // whether the goal has been fulfilled
+        );
+
+        requestIdToGoalRequest[requestId] = greq;
+
+        emit GoalRequestCreated(greq);
+    }
 
     function fulfill(
         bytes32 _requestId,
         uint256 _payload,
-        uint256 _userId
-    )
-    public 
-    override
-    recordChainlinkFulfillment(_requestId){    
-        GoalRequest memory greq = requestIdGoalRequest[_requestId];
+        uint256 _username
+    ) public override recordChainlinkFulfillment(_requestId) {
+        GoalRequest memory greq = requestIdToGoalRequest[_requestId];
         greq.fulfilled = true;
         goalIds.increment();
         uint256 goalId = goalIds.current();
-        uint[] storage userGoalIds = usersGoalIds[msg.sender];
+        uint256[] storage userGoalIds = userToGoalIds[msg.sender];
         userGoalIds.push(goalId);
         amountLockedByAddress[payable(msg.sender)] += greq.amountPledged;
         Goal memory goal = Goal(
             goalId, // goalId
-            _userId,
-            greq.goalName, // goal
-            _payload,
-            greq.deadline,
+            _username,
+            greq.goal, // goal
+            _payload, // target
+            greq.startDate, // startDate
+            greq.endDate, // endDate
             greq.goalOwnerAddress,
             greq.amountPledged,
             false, // achieved
@@ -114,34 +133,37 @@ contract GoalContract is ReentrancyGuard, ChainlinkTwitterAdapter{
             false // ended
         );
         idToGoal[goalId] = goal;
-        emit GoalCreated(
-            goal
-        );
+        emit GoalCreated(goal);
     }
 
+    function getGoalRequestFufilled(bytes32 _requestId)
+        public
+        view
+        returns (bool)
+    {
+        return requestIdToGoalRequest[_requestId].fulfilled;
+    }
 
-    function getUserGoals(
-        address userAddr
-    )
-    public
-    view
-    returns (Goal[] memory){
-        uint256[] memory userGoalIds = usersGoalIds[userAddr];
+    function getUserGoals(address userAddr)
+        public
+        view
+        returns (Goal[] memory)
+    {
+        uint256[] memory userGoalIds = userToGoalIds[userAddr];
         Goal[] memory goals = new Goal[](userGoalIds.length);
-        for (uint i=0; i < userGoalIds.length; i++){
+        for (uint256 i = 0; i < userGoalIds.length; i++) {
             goals[i] = idToGoal[userGoalIds[i]];
         }
         return goals;
     }
 
-    function getLastUserGoal(
-        address userAddr
-    ) 
-    public 
-    view 
-    returns (Goal memory){
-        uint256[] memory userGoalIds = usersGoalIds[userAddr];
-        return idToGoal[userGoalIds[userGoalIds.length-1]];
+    function getLastUserGoal(address userAddr)
+        public
+        view
+        returns (Goal memory)
+    {
+        uint256[] memory userGoalIds = userToGoalIds[userAddr];
+        return idToGoal[userGoalIds[userGoalIds.length - 1]];
     }
 
     // function evaluateGoal(uint256 goalId, bool achieved) public {
@@ -155,16 +177,16 @@ contract GoalContract is ReentrancyGuard, ChainlinkTwitterAdapter{
     //         "Goal deadline has not passed yet."
     //     );
 
-        // goalsAchieved.increment();
-        // idToGoal[goalId].achieved = achieved;
-        // idToGoal[goalId].ended = true;
+    // goalsAchieved.increment();
+    // idToGoal[goalId].achieved = achieved;
+    // idToGoal[goalId].ended = true;
 
-        // emit GoalEvaluated(
-        //     idToGoal[goalId].goalId,
-        //     idToGoal[goalId].goal,
-        //     idToGoal[goalId].goalOwnerAddress,
-        //     idToGoal[goalId].achieved
-        // );
+    // emit GoalEvaluated(
+    //     idToGoal[goalId].goalId,
+    //     idToGoal[goalId].goal,
+    //     idToGoal[goalId].goalOwnerAddress,
+    //     idToGoal[goalId].achieved
+    // );
     // }
 
     // function withdrawFunds(uint256 goalId) public nonReentrant {
@@ -292,9 +314,5 @@ contract GoalContract is ReentrancyGuard, ChainlinkTwitterAdapter{
     //     return goals;
     // }
 
-
     // to support receiving ETH by default
-    receive() external payable {}
-
-    fallback() external payable {}
 }

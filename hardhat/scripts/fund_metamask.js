@@ -24,6 +24,8 @@ async function main() {
         value: ethers.utils.parseEther('1')
     });
 
+    console.log(metamaskAddress);
+
     console.log("ETH send to:", metamaskAddress);
 }
 

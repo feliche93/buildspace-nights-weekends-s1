@@ -4,7 +4,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     const LinkToken = await ethers.getContract("LinkToken")
     const Operator = await ethers.getContract("Operator")
 
-    await deploy('GoalContract', {
+    await deploy('GoalContractV1', {
         from: deployer,
         args: [
             LinkToken.address,
@@ -14,5 +14,5 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     });
 
 };
-module.exports.tags = ['GoalContract'];
+module.exports.tags = ['GoalContractV1'];
 module.exports.dependencies = ['LinkToken', 'Operator'];
