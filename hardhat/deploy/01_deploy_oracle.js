@@ -19,7 +19,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     await operator.setAuthorizedSenders([nodeAddress])
 
     authorized = await operator.isAuthorizedSender(nodeAddress)
-    console.log(`Node Addres ${nodeAddress} is authorized: ${authorized}`)
+    console.log(`Node Addres ${nodeAddress} is authorized: ${authorized} on Operator ${operator.address}`)
 
 };
 module.exports.tags = ['Operator'];
