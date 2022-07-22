@@ -11,7 +11,7 @@ ChainlinkTwitterAdapter is
 ChainlinkClient {
     using Chainlink for Chainlink.Request;
     uint256 private constant ORACLE_PAYMENT = 1 * LINK_DIVISIBILITY; 
-    address private oracle;
+    address public oracle;
     bytes32 private jobId;
     uint256 private fee;
 
