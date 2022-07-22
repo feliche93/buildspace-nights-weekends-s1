@@ -19,6 +19,7 @@ contract GoalContractV1 is ReentrancyGuard, ChainlinkTwitterAdapter {
         uint256 goalId;
         uint256 username;
         string goal;
+        uint256 current;
         uint256 target;
         uint256 startDate;
         uint256 endDate;
@@ -36,6 +37,11 @@ contract GoalContractV1 is ReentrancyGuard, ChainlinkTwitterAdapter {
         uint256 target;
         address goalOwnerAddress;
         uint256 amountPledged;
+        bool fulfilled;
+    }
+
+    struct GoalEvaluateRequest {
+        uint256 goalId;
         bool fulfilled;
     }
 
@@ -110,11 +116,15 @@ contract GoalContractV1 is ReentrancyGuard, ChainlinkTwitterAdapter {
     }
 
     function createGoalEvaluationRequest(
-        uint256 goalId
+        uint256 _goalId
     )
     public {
-        Goal memory goal = idToGoal[goalId];
+        Goal memory goal = idToGoal[_goalId];
         bytes32 requestId = requestLikesSinceTs(goal.username, goal.startDate);
+        GoalEvaluateRequest memory gereq = GoalEvaluateRequest(
+        _goalId,
+        false //fillfilment
+        );
     }
 
     function fulfillGoalRequest(
@@ -133,7 +143,8 @@ contract GoalContractV1 is ReentrancyGuard, ChainlinkTwitterAdapter {
             goalId, // goalId
             _username,
             greq.goal, // goal
-            _payload, // target
+            _payload,  //current
+            greq.target, // target
             greq.startDate, // startDate
             greq.endDate, // endDate
             greq.goalOwnerAddress,
