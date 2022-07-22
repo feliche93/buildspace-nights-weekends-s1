@@ -78,11 +78,11 @@ def router(request: Request) -> dict:
     request.data['payload'] = payload
     print(request)
 
-    return JSONResponse(
-        jobRunID=request.id,
-        data=request.data,
-        statusCode=200,
-    )
+    return {
+        "jobRunID": request.id,
+        "data": request.data,
+        "statusCode": 200,
+    }
 
 @app.post("/latest_tweet_ts/")
 def latest_tweet_ts(request: Request) -> int:
