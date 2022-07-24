@@ -49,6 +49,7 @@ contract GoalContractV1 is ReentrancyGuard, ChainlinkTwitterAdapter {
     mapping(address => uint256[]) public userToGoalIds;
     mapping(address => bytes32) public userToLastReqId;
     mapping(bytes32 => GoalRequest) public requestIdToGoalRequest;
+    mapping(bytes32 => GoalEvaluateRequest) public requestIdToGoalEvaluationRequest;
     mapping(address => uint256) public amountLockedByAddress;
 
     constructor(address _linkTokenAddr, address _oralcleAddr)
@@ -60,9 +61,10 @@ contract GoalContractV1 is ReentrancyGuard, ChainlinkTwitterAdapter {
 
     fallback() external payable {}
 
-    event GoalCreated(Goal goal);
-
     event GoalRequestCreated(GoalRequest goalRequest);
+    event GoalCreated(Goal goal);
+    event GoalEvaluationRequestCreated(GoalEvaluateRequest goalEvalRequest);
+    event GoalEvauated(Goal goal);
 
     event GoalEvaluated(
         uint256 goalId,
@@ -120,11 +122,16 @@ contract GoalContractV1 is ReentrancyGuard, ChainlinkTwitterAdapter {
     )
     public {
         Goal memory goal = idToGoal[_goalId];
+        require (goal.endDate <= block.timestamp, "Your challenge is not over yet!");
         bytes32 requestId = requestLikesSinceTs(goal.username, goal.startDate);
         GoalEvaluateRequest memory gereq = GoalEvaluateRequest(
         _goalId,
         false //fillfilment
         );
+
+        requestIdToGoalEvaluationRequest[requestId] = gereq;
+
+        emit GoalEvaluationRequestCreated(gereq);
     }
 
     function fulfillGoalRequest(
@@ -155,6 +162,18 @@ contract GoalContractV1 is ReentrancyGuard, ChainlinkTwitterAdapter {
         );
         idToGoal[goalId] = goal;
         emit GoalCreated(goal);
+    }
+
+    function fulfillGoalEvaluationRequest(
+        bytes32 _requestId,
+        uint256 _payload,
+        uint256 _userId
+    ) public override recordChainlinkFulfillment(_requestId) {
+        GoalEvaluateRequest memory gereq = requestIdToGoalEvaluationRequest[_requestId];
+        Goal storage goal = idToGoal[gereq.goalId];
+        uint256 increment = _payload - goal.current;
+        bool goal_reached = increment >= goal.target;
+        require(goal_reached, "You did not reach your goal");
     }
 
     function getGoalRequestFufilled(bytes32 _requestId)
