@@ -30,13 +30,25 @@ describe('Test Chainlink Flow', () => {
     // });
 
     it('Succesfully creates a goal', async function () {
+        const { deployer, nodeAddress } = await getNamedAccounts();
+        const signer = await ethers.getSigner(deployer);
         await deployments.fixture("GoalContractV1")
         const goalContract = await ethers.getContract("GoalContractV1");
-        const createdGoal = await goalContract.createGoal('Test', 'hagenho_eth', 1657828533) // expext().to.emit(goalContract, 'GoalRequestCreated');
+        console.log(`GoalContract address: ${goalContract.address}`)
+        console.log(`GoalContract Oracle address: ${await goalContract.oracle()}`)
+        const operatorContract = await ethers.getContract("Operator");
+        console.log(`Operator address: ${operatorContract.address}`)
 
-        // const requestId = await.goalContract.getRequestId();
+        const createdGoal = await goalContract.createGoalRequest('Test', 0, 'hagenho_eth', 1657828533, 1657828533) // expext().to.emit(goalContract, 'GoalRequestCreated');
 
-        console.log(`Created goal: ${requestId}`);
+        const requestId = await goalContract.userToLastReqId(signer.address);
+        goalRequest = await goalContract.requestIdToGoalRequest(requestId);
+
+        while (!goalRequest[6]){
+            goalRequest = await goalContract.requestIdToGoalRequest(requestId);
+        }
+
+        console.log(`Created goal: ${goalRequest[6]}`);
     });
 
 });
