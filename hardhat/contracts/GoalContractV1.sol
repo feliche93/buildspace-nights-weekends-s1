@@ -49,7 +49,8 @@ contract GoalContractV1 is ReentrancyGuard, ChainlinkTwitterAdapter {
     mapping(address => uint256[]) public userToGoalIds;
     mapping(address => bytes32) public userToLastReqId;
     mapping(bytes32 => GoalRequest) public requestIdToGoalRequest;
-    mapping(bytes32 => GoalEvaluateRequest) public requestIdToGoalEvaluationRequest;
+    mapping(bytes32 => GoalEvaluateRequest)
+        public requestIdToGoalEvaluationRequest;
     mapping(address => uint256) public amountLockedByAddress;
 
     constructor(address _linkTokenAddr, address _oralcleAddr)
@@ -91,14 +92,16 @@ contract GoalContractV1 is ReentrancyGuard, ChainlinkTwitterAdapter {
         string memory username,
         uint256 startDate,
         uint256 endDate
-    ) 
-    public 
-    payable {
+    ) public payable {
         // require(deadlineInDays > 0, "Deadline must be at least 1 day");
 
         bytes32 requestId = requestLastUserTweetTs(username);
 
-        console.log("username: %s", username);
+        console.log("Username: %s", username);
+        console.log("Target: %d", target);
+        console.log("Start Date: %d", startDate);
+        console.log("End Date: %d", endDate);
+        console.log("goal: %s", goal);
 
         userToLastReqId[msg.sender] = requestId;
 
@@ -117,16 +120,16 @@ contract GoalContractV1 is ReentrancyGuard, ChainlinkTwitterAdapter {
         emit GoalRequestCreated(greq);
     }
 
-    function createGoalEvaluationRequest(
-        uint256 _goalId
-    )
-    public {
+    function createGoalEvaluationRequest(uint256 _goalId) public {
         Goal memory goal = idToGoal[_goalId];
-        require (goal.endDate <= block.timestamp, "Your challenge is not over yet!");
+        require(
+            goal.endDate <= block.timestamp,
+            "Your challenge is not over yet!"
+        );
         bytes32 requestId = requestLikesSinceTs(goal.username, goal.startDate);
         GoalEvaluateRequest memory gereq = GoalEvaluateRequest(
-        _goalId,
-        false //fillfilment
+            _goalId,
+            false //fillfilment
         );
 
         requestIdToGoalEvaluationRequest[requestId] = gereq;
@@ -139,6 +142,7 @@ contract GoalContractV1 is ReentrancyGuard, ChainlinkTwitterAdapter {
         uint256 _payload,
         uint256 _username
     ) public override recordChainlinkFulfillment(_requestId) {
+        console.log("fufilled goal request");
         GoalRequest memory greq = requestIdToGoalRequest[_requestId];
         greq.fulfilled = true;
         goalIds.increment();
@@ -150,7 +154,7 @@ contract GoalContractV1 is ReentrancyGuard, ChainlinkTwitterAdapter {
             goalId, // goalId
             _username,
             greq.goal, // goal
-            _payload,  //current
+            _payload, //current
             greq.target, // target
             greq.startDate, // startDate
             greq.endDate, // endDate
@@ -169,7 +173,9 @@ contract GoalContractV1 is ReentrancyGuard, ChainlinkTwitterAdapter {
         uint256 _payload,
         uint256 _userId
     ) public override recordChainlinkFulfillment(_requestId) {
-        GoalEvaluateRequest memory gereq = requestIdToGoalEvaluationRequest[_requestId];
+        GoalEvaluateRequest memory gereq = requestIdToGoalEvaluationRequest[
+            _requestId
+        ];
         Goal storage goal = idToGoal[gereq.goalId];
         uint256 increment = _payload - goal.current;
         bool goal_reached = increment >= goal.target;

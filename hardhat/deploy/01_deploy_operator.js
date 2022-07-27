@@ -3,8 +3,6 @@ const { ethers } = require("hardhat");
 module.exports = async ({ getNamedAccounts, deployments }) => {
     const { deploy } = deployments;
     const { deployer, nodeAddress } = await getNamedAccounts();
-
-    console.log("nodeAddress:", nodeAddress);
     const LinkToken = await ethers.getContract("LinkToken")
     await deploy('Operator', {
         from: deployer,
@@ -12,7 +10,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
             LinkToken.address,
             deployer
         ],
-        log: true,
+        log: false,
     });
 
     const operator = await ethers.getContract("Operator")

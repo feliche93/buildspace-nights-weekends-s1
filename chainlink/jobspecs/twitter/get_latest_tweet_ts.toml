@@ -2,8 +2,9 @@ type = "directrequest"
 schemaVersion = 1
 name = "twitter-user-latest-tweet-ts"
 externalJobID = "2cc92622-6a6a-4975-ae49-9c873525e881"
+evmChainID = 31137
 maxTaskDuration = "0s"
-contractAddress = "0x929103A33a06dde3E26F2b8e13aB01DA3A7b9eb4"
+contractAddress = "0x5067457698Fd6Fa1C6964e416b3f42713513B3dD"
 minIncomingConfirmations = 0
 minContractPaymentLinkJuels = "0"
 observationSource = """
@@ -13,7 +14,7 @@ observationSource = """
                   topics="$(jobRun.logTopics)"]
 
     decode_cbor  [type=cborparse data="$(decode_log.data)"]
-    fetch        [type=bridge name="twitter-adapter" requestData="{\\"id\\": $(jobSpec.externalJobID), \\"data\\": {\\"username\\": $(decode_cbor.username), \\"userid\\": $(decode_cbor.userid), \\"method\\": $(decode_cbor.method), \\"unix_ts\\": $(decode_cbor.unix_ts)}}"]
+    fetch        [type=bridge name="twitter-adapter" requestData="{\\"id\\": $(jobSpec.externalJobID), \\"data\\": {\\"username\\": $(decode_cbor.username), \\"userid\\": $(decode_cbor.userid), \\"method\\": $(decode_cbor.method), \\"unix_ts\\": $(decode_cbor.unix_ts)}}" allowunrestrictednetworkaccess="true"]
     decode_log -> decode_cbor -> fetch
     fetch -> payload
     fetch -> userid
@@ -26,7 +27,7 @@ observationSource = """
                   abi="fulfillOracleRequest2(bytes32 requestId, uint256 payment, address callbackAddress, bytes4 callbackFunctionId, uint256 expiration, bytes calldata data)"
                   data="{\\"requestId\\": $(decode_log.requestId), \\"payment\\": $(decode_log.payment), \\"callbackAddress\\": $(decode_log.callbackAddr), \\"callbackFunctionId\\": $(decode_log.callbackFunctionId), \\"expiration\\": $(decode_log.cancelExpiration), \\"data\\": $(encode_data)}"
                  ]
-    submit_tx    [type=ethtx to="0x929103A33a06dde3E26F2b8e13aB01DA3A7b9eb4" data="$(encode_tx)"]
+    submit_tx    [type=ethtx to="0x5067457698Fd6Fa1C6964e416b3f42713513B3dD" data="$(encode_tx)"]
 
     encode_data -> encode_tx -> submit_tx
 """

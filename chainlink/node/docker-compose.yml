@@ -5,7 +5,7 @@ services:
     command: local node -p /chainlink/.password -a /chainlink/.api
     volumes:
       - ./:/chainlink
-    image: smartcontract/chainlink:1.1.1
+    image: smartcontract/chainlink:1.6.0-root
     restart: on-failure
     depends_on:
       - db
@@ -16,11 +16,16 @@ services:
     environment:
       ROOT: /chainlink
       LOG_LEVEL: debug
-      ETH_CHAIN_ID: 1337
+      ETH_CHAIN_ID: 31337
       CHAINLINK_TLS_PORT: 0
+      LOG_SQL: true
       SECURE_COOKIES: "false"
       ALLOW_ORIGINS: "*"
       ETH_URL: ws://host.docker.internal:8545
+      ETH_HTTP_URL: http://host.docker.internal:8545
+      NODE_NO_NEW_HEADS_THRESHOLD: "0m"
+      CHAINLINK_DEV: true
+      FEATURE_WEBHOOK_V2: true
       # DATABASE_URL: postgresql://postgres:linklink@35.223.226.69:5432/postgres
       DATABASE_URL: postgresql://postgres:postgres@db:5432/postgres?sslmode=disable
   db:

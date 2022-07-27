@@ -12,6 +12,7 @@ from pydantic import BaseModel
 from starlette.status import HTTP_403_FORBIDDEN
 from tweepy import Client
 
+
 # CREDENTIALS = json.load(open("chainlink/adapters/twitter/TWITTER_CREDS.json"))
 CREDENTIALS = json.load(open("TWITTER_CREDS.json"))
 client = Client(CREDENTIALS["bearer_token"])
@@ -28,7 +29,7 @@ app = FastAPI(docs_url="/")
 
 
 class Request(BaseModel):
-    id: str
+    id: str = None
     data: dict
     meta: dict = None
     responseURL: str = None
@@ -46,13 +47,11 @@ async def get_api_key(
     else:
         raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail="Could not validate credentials")
 
+
 @app.exception_handler(Exception)
 async def unicorn_exception_handler(request: Request, exc: Exception):
-    return JSONResponse(
-        jobRunID=request.id,
-        data=request.data,
-        statusCode=413
-    )
+    return JSONResponse(jobRunID=request.id, data=request.data, statusCode=413)
+
 
 # TODO: How would this work wihtout specifying a username?
 @app.post("/router/")
@@ -63,19 +62,19 @@ def router(request: Request) -> dict:
     Returns:
         dict: Dict with timestamp of the latest tweet.
     """
-    if not request.data['userid']:
-        if 'username' in request.data:
+    if not request.data["userid"]:
+        if "username" in request.data:
             username = request.data["username"]
             userid = get_userid(username)
-            request.data['userid'] = userid
+            request.data["userid"] = userid
         else:
             raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail="Must either specify userid or username.")
-    if not 'method' in request.data:
+    if not "method" in request.data:
         raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail="Must specify method.")
 
-    method = eval(request.data['method'])
+    method = eval(request.data["method"])
     payload = method(request)
-    request.data['payload'] = payload
+    request.data["payload"] = payload
     print(request)
 
     return {
@@ -84,9 +83,10 @@ def router(request: Request) -> dict:
         "statusCode": 200,
     }
 
+
 @app.post("/latest_tweet_ts/")
 def latest_tweet_ts(request: Request) -> int:
-    userid = request.data['userid']
+    userid = request.data["userid"]
     data = client.get_users_tweets(userid, tweet_fields=["created_at"]).data
     tweet = data[0]
     ts = int(tweet.created_at.timestamp())
@@ -110,8 +110,8 @@ def likes_since_ts(request: Request) -> int:
     Returns:
         int: Number of likes since the given unix timestamp
     """
-    userid = request.data['userid']
-    unix_ts = int(request.data['unix_ts'])
+    userid = request.data["userid"]
+    unix_ts = int(request.data["unix_ts"])
     data = client.get_users_tweets(
         userid,
         tweet_fields=["created_at", "public_metrics"],
@@ -121,8 +121,8 @@ def likes_since_ts(request: Request) -> int:
     return cum_like_count
 
 
-@app.get("/tweet_count/yesterday")
-def tweet_count_yesterday(username: str) -> int:
+@app.post("/tweet_count/yesterday")
+def tweet_count_yesterday(request: Request) -> int:
     """Returns the number of tweets posted yesterday by the specified user.
 
     Args:
@@ -131,6 +131,8 @@ def tweet_count_yesterday(username: str) -> int:
     Returns:
         int: count of tweets
     """
+    username = request.data["username"]
+
     yesterday = pendulum.yesterday(tz="UTC")
 
     start_time = yesterday.start_of("day")
@@ -145,8 +147,8 @@ def tweet_count_yesterday(username: str) -> int:
     return len(data)
 
 
-@app.get("/tweet_count/last_week")
-def tweet_count_last_week(username: str) -> int:
+@app.post("/tweet_count/last_week")
+def tweet_count_last_week(request: Request) -> int:
     """Returns the number of tweets posted in the last week by the specified user.
 
     Args:
@@ -155,6 +157,8 @@ def tweet_count_last_week(username: str) -> int:
     Returns:
         int: count of tweets
     """
+    username = request.data["username"]
+
     today = pendulum.today(tz="UTC")
     start_of_last_week = today.start_of("week").subtract(days=7)
     end_of_last_week = start_of_last_week.end_of("week")

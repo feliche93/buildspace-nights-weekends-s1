@@ -52,18 +52,23 @@ module.exports = {
       }
     ]
   },
-  defaultNetwork: "ganache",
+  // defaultNetwork: "hardhat",
   networks: {
-    ganache: {
-      url: "http://127.0.0.1:8545",
-      chainId: 1337
+    hardhat: {
+      chainId: 31337,
+      loggingEnabled: true,
+
     },
-    mumbai: {
-      url: "https://polygon-mumbai.g.alchemy.com/v2/yAiPL8ralrroA3hD7WOqsZWqxq2J9Zv0",
-      accounts: [
-        process.env.PRIVATE_KEY
-      ]
-    }
+    // ganache: {
+    //   url: "http://127.0.0.1:8545",
+    //   chainId: 1337
+    // },
+    // mumbai: {
+    //   url: "https://polygon-mumbai.g.alchemy.com/v2/yAiPL8ralrroA3hD7WOqsZWqxq2J9Zv0",
+    //   accounts: [
+    //     process.env.PRIVATE_KEY
+    //   ]
+    // }
   },
   namedAccounts: {
     deployer: 0,

@@ -10,7 +10,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
             LinkToken.address,
             Operator.address
         ],
-        log: true,
+        log: false,
     });
 
 };

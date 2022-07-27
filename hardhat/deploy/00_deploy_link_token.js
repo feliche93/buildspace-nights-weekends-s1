@@ -3,7 +3,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     const { deployer } = await getNamedAccounts();
     await deploy('LinkToken', {
         from: deployer,
-        log: true,
+        log: false,
     });
 };
 module.exports.tags = ['LinkToken'];

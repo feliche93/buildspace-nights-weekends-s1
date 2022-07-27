@@ -34,21 +34,23 @@ describe('Test Chainlink Flow', () => {
         const signer = await ethers.getSigner(deployer);
         await deployments.fixture("GoalContractV1")
         const goalContract = await ethers.getContract("GoalContractV1");
-        console.log(`GoalContract address: ${goalContract.address}`)
-        console.log(`GoalContract Oracle address: ${await goalContract.oracle()}`)
+        // console.log(`GoalContract address: ${goalContract.address}`)
+        // console.log(`GoalContract Oracle address: ${await goalContract.oracle()}`)
         const operatorContract = await ethers.getContract("Operator");
-        console.log(`Operator address: ${operatorContract.address}`)
+        // console.log(`Operator address: ${operatorContract.address}`)
 
-        const createdGoal = await goalContract.createGoalRequest('Test', 0, 'hagenho_eth', 1657828533, 1657828533) // expext().to.emit(goalContract, 'GoalRequestCreated');
+        const createdGoal = await goalContract.createGoalRequest('Test', 0, 'cryptoneur_eth', 1657828533, 1657828533) // expext().to.emit(goalContract, 'GoalRequestCreated');
 
-        const requestId = await goalContract.userToLastReqId(signer.address);
-        goalRequest = await goalContract.requestIdToGoalRequest(requestId);
+        // const requestId = await goalContract.userToLastReqId(signer.address);
+        // goalRequest = await goalContract.requestIdToGoalRequest(requestId);
 
-        while (!goalRequest[6]){
-            goalRequest = await goalContract.requestIdToGoalRequest(requestId);
-        }
+        // while (!goalRequest[6]) {
+        //     goalRequest = await goalContract.requestIdToGoalRequest(requestId);
+        // }
 
-        console.log(`Created goal: ${goalRequest[6]}`);
+        // console.log(`Created goal: ${goalRequest[6]}`);
     });
+
+    // yarn hardhat test --network localhost --deploy-fixture
 
 });
