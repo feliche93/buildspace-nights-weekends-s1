@@ -101,7 +101,7 @@ contract GoalContractV1 is ReentrancyGuard, ChainlinkTwitterAdapter {
         console.log("Target: %d", target);
         console.log("Start Date: %d", startDate);
         console.log("End Date: %d", endDate);
-        console.log("goal: %s", goal);
+        console.log("goals: %s", goal);
 
         userToLastReqId[msg.sender] = requestId;
 

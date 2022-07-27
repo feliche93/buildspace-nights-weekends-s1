@@ -32,12 +32,12 @@ describe('Test Chainlink Flow', () => {
     it('Succesfully creates a goal', async function () {
         const { deployer, nodeAddress } = await getNamedAccounts();
         const signer = await ethers.getSigner(deployer);
-        await deployments.fixture("GoalContractV1")
+        // await deployments.fixture("GoalContractV1")
         const goalContract = await ethers.getContract("GoalContractV1");
         // console.log(`GoalContract address: ${goalContract.address}`)
         // console.log(`GoalContract Oracle address: ${await goalContract.oracle()}`)
         const operatorContract = await ethers.getContract("Operator");
-        // console.log(`Operator address: ${operatorContract.address}`)
+        console.log(`Operator address: ${operatorContract.address}`)
 
         const createdGoal = await goalContract.createGoalRequest('Test', 0, 'cryptoneur_eth', 1657828533, 1657828533) // expext().to.emit(goalContract, 'GoalRequestCreated');
 

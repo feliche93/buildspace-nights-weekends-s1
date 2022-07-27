@@ -2,9 +2,8 @@ type = "directrequest"
 schemaVersion = 1
 name = "twitter-user-latest-tweet-ts"
 externalJobID = "2cc92622-6a6a-4975-ae49-9c873525e881"
-evmChainID = 31137
 maxTaskDuration = "0s"
-contractAddress = "0x5067457698Fd6Fa1C6964e416b3f42713513B3dD"
+contractAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
 minIncomingConfirmations = 0
 minContractPaymentLinkJuels = "0"
 observationSource = """
@@ -27,7 +26,7 @@ observationSource = """
                   abi="fulfillOracleRequest2(bytes32 requestId, uint256 payment, address callbackAddress, bytes4 callbackFunctionId, uint256 expiration, bytes calldata data)"
                   data="{\\"requestId\\": $(decode_log.requestId), \\"payment\\": $(decode_log.payment), \\"callbackAddress\\": $(decode_log.callbackAddr), \\"callbackFunctionId\\": $(decode_log.callbackFunctionId), \\"expiration\\": $(decode_log.cancelExpiration), \\"data\\": $(encode_data)}"
                  ]
-    submit_tx    [type=ethtx to="0x5067457698Fd6Fa1C6964e416b3f42713513B3dD" data="$(encode_tx)"]
+    submit_tx    [type=ethtx to="0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512" data="$(encode_tx)"]
 
     encode_data -> encode_tx -> submit_tx
 """
