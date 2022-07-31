@@ -13,6 +13,7 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
   }
 });
 
+
 task("fundMetamask", "Funds the contract with ETH", async (taskArgs, hre) => {
 
   const accounts = await hre.ethers.getSigners();
@@ -57,6 +58,10 @@ module.exports = {
     hardhat: {
       chainId: 31337,
       loggingEnabled: true,
+      mining: {
+        auto: false,
+        interval: 1000
+      }
 
     },
     // ganache: {
