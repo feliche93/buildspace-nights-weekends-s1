@@ -127,6 +127,7 @@ contract GoalContractV1 is ReentrancyGuard, ChainlinkTwitterAdapter {
             "Your challenge is not over yet!"
         );
         bytes32 requestId = requestLikesSinceTs(goal.username, goal.startDate);
+        console.log("Goal evaluation requested");
         GoalEvaluateRequest memory gereq = GoalEvaluateRequest(
             _goalId,
             false //fillfilment
@@ -143,8 +144,9 @@ contract GoalContractV1 is ReentrancyGuard, ChainlinkTwitterAdapter {
         uint256 _username
     ) public override recordChainlinkFulfillment(_requestId) {
         console.log("fufilled goal request");
-        GoalRequest memory greq = requestIdToGoalRequest[_requestId];
+        GoalRequest storage greq = requestIdToGoalRequest[_requestId];
         greq.fulfilled = true;
+        console.log(greq.fulfilled);
         goalIds.increment();
         uint256 goalId = goalIds.current();
         uint256[] storage userGoalIds = userToGoalIds[msg.sender];
@@ -173,6 +175,7 @@ contract GoalContractV1 is ReentrancyGuard, ChainlinkTwitterAdapter {
         uint256 _payload,
         uint256 _userId
     ) public override recordChainlinkFulfillment(_requestId) {
+        console.log("Goal evaluation request received");
         GoalEvaluateRequest memory gereq = requestIdToGoalEvaluationRequest[
             _requestId
         ];
@@ -180,6 +183,7 @@ contract GoalContractV1 is ReentrancyGuard, ChainlinkTwitterAdapter {
         uint256 increment = _payload - goal.current;
         bool goal_reached = increment >= goal.target;
         require(goal_reached, "You did not reach your goal");
+        console.log("Goal evaluated");
     }
 
     function getGoalRequestFufilled(bytes32 _requestId)
@@ -209,7 +213,9 @@ contract GoalContractV1 is ReentrancyGuard, ChainlinkTwitterAdapter {
         returns (Goal memory)
     {
         uint256[] memory userGoalIds = userToGoalIds[userAddr];
-        return idToGoal[userGoalIds[userGoalIds.length - 1]];
+        console.log(userGoalIds[0]);
+        return idToGoal[userGoalIds[0]];
+        // return idToGoal[userGoalIds[userGoalIds.length - 1]];
     }
 
     // function evaluateGoal(uint256 goalId, bool achieved) public {

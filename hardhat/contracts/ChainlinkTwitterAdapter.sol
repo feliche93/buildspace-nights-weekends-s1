@@ -20,7 +20,7 @@ contract ChainlinkTwitterAdapter is ChainlinkClient {
     constructor(address _linkTokenAddr, address _oralcleAddr) {
         setChainlinkToken(_linkTokenAddr);
         oracle = _oralcleAddr; // oracle address
-        jobId = 0x3263633932363232366136613439373561653439396338373335323565383831; //job id
+        jobId = '2cc926226a6a4975ae499c873525e881'; //job id
 
         console.log("LinkToken address: %s", _linkTokenAddr);
         console.log("Oracle address: %s", _oralcleAddr);

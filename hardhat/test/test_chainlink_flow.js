@@ -13,9 +13,9 @@ describe('Test Chainlink Flow', () => {
         // Funde node with ether
         await signer.sendTransaction({
             to: nodeAddress,
-            value: ethers.utils.parseEther('1')
+            value: ethers.utils.parseEther('10')
         });
-
+        await new Promise(r => setTimeout(r, 2000));
         const balance = await node.getBalance();
         console.log(`Node ${nodeAddress} balance: ${balance}`);
 
@@ -41,12 +41,17 @@ describe('Test Chainlink Flow', () => {
 
         const createdGoal = await goalContract.createGoalRequest('Test', 0, 'cryptoneur_eth', 1657828533, 1657828533) // expext().to.emit(goalContract, 'GoalRequestCreated');
 
-        // const requestId = await goalContract.userToLastReqId(signer.address);
-        // goalRequest = await goalContract.requestIdToGoalRequest(requestId);
-
-        // while (!goalRequest[6]) {
-        //     goalRequest = await goalContract.requestIdToGoalRequest(requestId);
-        // }
+        const requestId = await goalContract.userToLastReqId(signer.address);
+        goalRequest = await goalContract.requestIdToGoalRequest(requestId);
+        while (!goalRequest[6]) {
+            goalRequest = await goalContract.requestIdToGoalRequest(requestId);
+            console.log(goalRequest);
+        }
+        console.log("Goal succesfully requested.")
+        const userGoalId = await goalContract.getLastUserGoal(signer.address);
+        console.log(`Goal id ${userGoalId}`)
+        const evaluatedGoal = await goalContract.createGoalEvaluationRequest(userGoalId)
+        
 
         // console.log(`Created goal: ${goalRequest[6]}`);
     });

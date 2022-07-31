@@ -5,7 +5,8 @@ services:
     command: local node -p /chainlink/.password -a /chainlink/.api
     volumes:
       - ./:/chainlink
-    image: smartcontract/chainlink:1.6.0-root
+    # image: smartcontract/chainlink:1.6.0-root
+    image: smartcontract/chainlink:1.4.1-root
     restart: on-failure
     depends_on:
       - db
